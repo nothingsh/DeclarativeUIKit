@@ -152,6 +152,8 @@ title.text("Updated")   // later updates go through the same reference
 | `UIButton` | `title`, `titleColor`, `image`, `backgroundImage`, each with `for state: UIControl.State = .normal` |
 | `UISwitch` | `isOn`, `onTintColor` |
 | `UISlider` | `value`, `minimumValue`, `maximumValue`, `minimumTrackTintColor`, `maximumTrackTintColor` |
+| `UITextField` | `text`, `attributedText`, `placeholder`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry` |
+| `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
 
 Each modifier takes the same type as the UIKit property it sets. They are not an exhaustive mirror of UIKit; for anything else, use `configure`, which hands you the view with its concrete type:
 
@@ -184,6 +186,25 @@ let volume = UISlider()
 - Events use UIKit's own target–action: `play.addTarget(self, action: #selector(togglePlayback), for: .touchUpInside)`. The modifiers add no targets and no closure handlers.
 - Setting a value with `isOn` or `value` is not a user event and sends no `.valueChanged`, as with the UIKit properties.
 - `UISlider` clamps `value` to its current range, so set `minimumValue` and `maximumValue` before `value`.
+
+Text input modifiers configure `UITextField` and `UITextView` the same way; `font(textStyle:)` follows Dynamic Type as it does for labels.
+
+```swift
+let email = UITextField()
+    .placeholder("Email")
+    .keyboardType(.emailAddress)
+    .returnKeyType(.next)
+    .font(textStyle: .body)
+
+let notes = UITextView()
+    .text(draft)
+    .font(textStyle: .body)
+    .isScrollEnabled(false)
+```
+
+- `placeholder` exists only on `UITextField`, because `UITextView` has no placeholder in UIKit and the library doesn't add one.
+- A text view's size depends on `isScrollEnabled`. With `false`, it is as tall as its text at the width it is given, and grows as the text grows, like a multiline label. With `true`, UIKit's default, it has no intrinsic height: give it one with `frame` or constraints, and longer text scrolls inside it.
+- Delegates, editing and the keyboard stay UIKit's own. The modifiers set no delegate, and there is no two-way binding, input validation or keyboard avoidance.
 
 ### Padding
 
@@ -368,9 +389,9 @@ Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` o
 
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch` and `UISlider`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, and `HScroll` / `VScroll`.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch`, `UISlider`, `UITextField` and `UITextView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, and `HScroll` / `VScroll`.
 
-Planned: property modifiers for text input, safe-area padding, and an example app.
+Planned: safe-area padding and an example app.
 
 The API may change before 1.0.
 
