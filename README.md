@@ -1,8 +1,10 @@
 # DeclarativeUIKit
 
+**English** | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md)
+
 A lightweight declarative layout library for UIKit, built on plain `UIView` and Auto Layout with no third-party dependencies.
 
-It introduces no custom rendering layer and no parallel view hierarchy. What you get back is always a real `UIView` or subclass, so it mixes freely with existing UIKit code.
+It introduces no custom rendering layer and no parallel view hierarchy. What you get back is always a real `UIView` or subclass, so it mixes freely with existing UIKit code. See the [example app](#example-app) for screenshots.
 
 ```swift
 view.addVStack(alignment: .leading, spacing: 4) {
@@ -398,11 +400,154 @@ Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` o
 
 ## Example app
 
-`Example/Example.xcodeproj` is a small iOS app that uses the library as a local package. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. It has three screens:
+`Example/Example.xcodeproj` is a small iOS app that uses the library as a local package. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. The snippets below are trimmed from its three screens.
 
-- **Profile card** — stacks, `frame`, a card `background` and a status badge placed with `overlay`. The buttons change the bio label and the badge through references the view controller keeps, and the card resizes with them.
-- **Form** — text fields, a text view that grows with its text, a switch and a slider, wired with UIKit's own delegates and target–action.
-- **Scrolling** — `HScroll` rows inside a `VScroll`, and rows appended to a stack at runtime.
+### Profile card
+
+The code has the same shape as the screen. The status badge is attached to the avatar with `overlay`, with no wrapper view or `ZStack`. `bio` and `status` are ordinary properties: the buttons change them directly, and Auto Layout resizes the card. Nothing is rebuilt.
+
+<table>
+<tr>
+<td>
+
+```swift
+VStack(alignment: .leading, spacing: 12) {
+    HStack(spacing: 12) {
+        UIImageView()
+            .image(UIImage(systemName: "person.crop.circle.fill"))
+            .tintColor(.systemIndigo)
+            .frame(width: 64, height: 64)
+            .overlay(alignment: .bottomTrailing) { status }
+        VStack(alignment: .leading, spacing: 2) {
+            UILabel()
+                .text("Ada Lovelace")
+                .font(textStyle: .title2)
+            UILabel()
+                .text("Mathematician · London")
+                .font(textStyle: .subheadline)
+                .textColor(.secondaryLabel)
+        }
+        Spacer()
+    }
+    bio
+}
+.card()
+
+// Later, from a button's action:
+bio.text(Self.longBio)
+status.background(.systemGray)
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-profile.png" width="300" alt="Profile card screen">
+</td>
+</tr>
+</table>
+
+A reusable style is just a function over the modifiers. `card()` is the app's own helper, not part of the library:
+
+```swift
+extension UIStackView {
+    func card(padding: CGFloat = 16) -> Self {
+        self.padding(padding)
+            .background {
+                UIView()
+                    .background(.secondarySystemGroupedBackground)
+                    .configure { $0.layer.cornerRadius = 12 }
+            }
+    }
+}
+```
+
+### Form
+
+The controls are plain `UITextField`, `UISwitch` and `UISlider`, configured with modifiers and kept as properties. Events use UIKit's own target–action and delegates. `Spacer` pushes the switch and the value to the trailing edge.
+
+<table>
+<tr>
+<td>
+
+```swift
+private let newsletter = UISwitch().isOn(true)
+
+private let frequency = UISlider()
+    .minimumValue(1)
+    .maximumValue(7)
+    .value(3)
+
+// In viewDidLoad:
+frequency.addTarget(self, action: #selector(frequencyChanged),
+                    for: .valueChanged)
+
+VStack(alignment: .fill, spacing: 12) {
+    HStack(spacing: 8) {
+        UILabel()
+            .text("Newsletter")
+            .font(textStyle: .body)
+        Spacer()
+        newsletter
+    }
+    HStack(spacing: 8) {
+        UILabel()
+            .text("Issues per week")
+            .font(textStyle: .body)
+        Spacer()
+        frequencyValue
+    }
+    frequency
+}
+.card()
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-form.png" width="300" alt="Form screen">
+</td>
+</tr>
+</table>
+
+### Scrolling
+
+`HScroll` rows inside a `VScroll`. Content closures accept `for` loops, and small functions that return a `UIView` compose like any other view. Tapping *Add row* appends to a stack kept as a property, and the scroll view's content size follows.
+
+<table>
+<tr>
+<td>
+
+```swift
+HScroll(spacing: 8, showsIndicators: false) {
+    for tag in Self.tags { chip(tag) }
+}
+
+HScroll(alignment: .top, spacing: 12) {
+    for index in 1...8 { card(index) }
+}
+
+rows
+
+private func chip(_ text: String) -> UIView {
+    VStack {
+        UILabel()
+            .text(text)
+            .font(textStyle: .subheadline)
+            .textColor(.systemBlue)
+    }
+    .padding(horizontal: 12, vertical: 6)
+    .background {
+        UIView()
+            .background(UIColor.systemBlue.withAlphaComponent(0.12))
+            .configure { $0.layer.cornerRadius = 8 }
+    }
+}
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-scroll.png" width="300" alt="Scrolling screen">
+</td>
+</tr>
+</table>
 
 All text uses `font(textStyle:)`, so the screens follow Dynamic Type, and they adapt to rotation. Content closures run once; later changes are made through the views themselves, not through data binding.
 
