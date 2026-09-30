@@ -41,6 +41,66 @@ final class MountingTests: XCTestCase {
         XCTAssertEqual(content.frame, host.rootView.bounds)
     }
 
+    func testSafeAreaEdgesFollowSafeAreaGuide() {
+        let host = LayoutTestHost(
+            size: CGSize(width: 320, height: 640),
+            additionalSafeAreaInsets: UIEdgeInsets(top: 11, left: 13, bottom: 17, right: 19)
+        )
+        let content = UIView()
+
+        host.rootView.addContent(content, safeArea: [.top, .leading])
+        host.layout()
+
+        let safe = host.rootView.safeAreaLayoutGuide.layoutFrame
+        let bounds = host.rootView.bounds
+        XCTAssertNotEqual(safe, bounds)
+        XCTAssertEqual(content.frame.minY, safe.minY)
+        XCTAssertEqual(content.frame.minX, safe.minX)
+        XCTAssertEqual(content.frame.maxY, bounds.maxY)
+        XCTAssertEqual(content.frame.maxX, bounds.maxX)
+
+        host.setAdditionalSafeAreaInsets(UIEdgeInsets(top: 40, left: 5, bottom: 0, right: 0))
+        let changed = host.rootView.safeAreaLayoutGuide.layoutFrame
+        XCTAssertNotEqual(changed.minY, safe.minY)
+        XCTAssertEqual(content.frame.minY, changed.minY)
+        XCTAssertEqual(content.frame.minX, changed.minX)
+    }
+
+    func testSafeAreaLeadingMirrorsInRightToLeft() {
+        let host = LayoutTestHost(
+            size: CGSize(width: 320, height: 640),
+            additionalSafeAreaInsets: UIEdgeInsets(top: 0, left: 13, bottom: 0, right: 19)
+        )
+        host.rootView.semanticContentAttribute = .forceRightToLeft
+        let content = UIView()
+
+        host.rootView.addContent(content, safeArea: .leading)
+        host.layout()
+
+        let safe = host.rootView.safeAreaLayoutGuide.layoutFrame
+        XCTAssertEqual(content.frame.maxX, safe.maxX, "Leading is the right edge in RTL.")
+        XCTAssertEqual(content.frame.minX, 0)
+    }
+
+    func testAddMethodsForwardSafeArea() {
+        let host = LayoutTestHost(
+            size: CGSize(width: 320, height: 640),
+            additionalSafeAreaInsets: UIEdgeInsets(top: 11, left: 13, bottom: 17, right: 19)
+        )
+        let root = host.rootView
+        let mounted: [UIView] = [
+            root.addHStack(safeArea: .all) { UIView() },
+            root.addVStack(safeArea: .all) { UIView() },
+            root.addHScroll(safeArea: .all) { UIView() },
+            root.addVScroll(safeArea: .all) { UIView() }
+        ]
+        host.layout()
+
+        for view in mounted {
+            XCTAssertEqual(view.frame, root.safeAreaLayoutGuide.layoutFrame, "\(type(of: view))")
+        }
+    }
+
     func testMountUsesDirectionalEdges() {
         let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
         host.rootView.semanticContentAttribute = .forceRightToLeft

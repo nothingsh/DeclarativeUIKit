@@ -38,22 +38,23 @@ Or in Xcode, File → Add Package Dependencies. No remote version has been publi
 
 ### `addContent(_:)`
 
-Mounts a view into a parent and makes it fill that parent.
+Mounts a view into a parent and makes it fill that parent, or the parent's safe area on the edges you choose.
 
 ```swift
 @discardableResult
-func addContent<Content: UIView>(_ content: Content) -> Content
+func addContent<Content: UIView>(_ content: Content, safeArea: LayoutEdges = []) -> Content
 ```
 
 ```swift
 let label = view.addContent(UILabel())   // returns the UILabel, ready to configure
 view.addContent(customView)              // the return value can be ignored
+view.addContent(page, safeArea: .all)    // stays inside the safe area
 ```
 
-- Pins all four edges of the content to the parent's edges, so it always fills the bounds.
-- Uses `leadingAnchor` and `trailingAnchor`, so the layout mirrors in right-to-left languages.
+- By default pins all four edges of the content to the parent's edges, so it fills the bounds and ignores the safe area.
+- The edges named in `safeArea` are pinned to the parent's `safeAreaLayoutGuide` instead. The content, including any background it draws, stays inside the safe area on those edges and follows it as it changes, for example on rotation. Name only some edges to let the others reach the parent's edges: `safeArea: .horizontal` keeps content clear of the sensor housing in landscape but lets it run under the status bar.
+- Uses `leadingAnchor` and `trailingAnchor`, so the layout mirrors in right-to-left languages. `LayoutEdges` is the same option set that `padding` uses.
 - Returns the same instance that was passed in, keeping its concrete type.
-- Applies no safe-area inset. Safe-area avoidance is planned as a separate modifier — see [Roadmap](#roadmap).
 - Leaves the content's own size constraints untouched.
 
 A view is meant to be mounted once. Calling this again for content that already has a superview logs a note through `NSLog`, removes the content from its current parent — which drops the constraints tying it to the old hierarchy — and mounts it again. Constraints never accumulate, but the content moves to the front of the subview order.
@@ -94,7 +95,15 @@ view.addVStack(alignment: .leading, spacing: 4) {
 }
 ```
 
-`addHStack` and `addVStack` take the same parameters as the initializers, mount the new stack through `addContent`, and return it. Like `addContent`, they mount to the parent's edges and apply no safe-area inset.
+`addHStack` and `addVStack` take the same parameters as the initializers plus `safeArea`, mount the new stack through `addContent`, and return it. As with `addContent`, the stack fills the parent unless you name safe-area edges:
+
+```swift
+view.addVStack(spacing: 8, safeArea: .all) {
+    title
+    body
+}
+.padding(16)
+```
 
 Stack modifiers return the stack, so it can be configured after construction or after mounting:
 
@@ -237,7 +246,7 @@ stack.padding(.top, 24, others: 8)                            // one edge, the r
 - Padding counts toward the stack's size: a stack whose content is 20 × 30 is 40 × 50 with `.padding(10)`.
 - It behaves like a property. `padding(_:_:)` changes only the edges you name and keeps the others, so `.padding(.horizontal, 16).padding(.vertical, 12)` sets all four. Every other form sets all four edges in one call. A later call replaces earlier values rather than adding to them.
 - `LayoutEdges` is an option set of `top`, `leading`, `bottom`, `trailing`, plus `horizontal`, `vertical` and `all`. Horizontal edges are `leading` and `trailing`, so they mirror in right-to-left languages.
-- Padding is fixed spacing and never includes the safe area.
+- Padding is fixed spacing and never includes the safe area. To keep content inside the safe area, mount it with `safeArea`; see [`addContent(_:)`](#addcontent_).
 - To pad a single view, put it in a stack: `VStack { label }.padding(16)`.
 
 ### Frame
@@ -362,13 +371,13 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 .padding(16)
 ```
 
-- `alignment`, `spacing` and the content closure mean the same as for `HStack` and `VStack`, and take the same defaults. `addHScroll` and `addVScroll` take the same parameters, mount through `addContent`, and return the scroll view.
+- `alignment`, `spacing` and the content closure mean the same as for `HStack` and `VStack`, and take the same defaults. `addHScroll` and `addVScroll` take the same parameters plus `safeArea`, mount through `addContent`, and return the scroll view.
 - The embedded stack's edges are pinned to the `contentLayoutGuide`, so the elements decide the scrollable length. On the other axis the stack is pinned to the `frameLayoutGuide`: a `VScroll`'s stack is as wide as the scroll view, an `HScroll`'s stack as tall, and `alignment` places the elements across it. When the scroll view resizes or an element changes, such as a label wrapping onto more lines, the content size follows.
 - Content shorter than the scroll view keeps its own length and is not stretched to fill it. An empty `VScroll {}` has a content size of zero along the scrolling axis.
 - The scrolling axis is unbounded, so a `Spacer` in a scroll view is only `minLength` long.
 - A scroll view has no intrinsic size along its scrolling axis. Nested in a stack, an `HScroll` takes its height from its elements but needs its width from outside, and a `VScroll` the reverse: use `.fill` alignment in the enclosing stack, as above, or `frame`. With `.leading`, `.center` or `.trailing` it collapses to zero length.
 - `showsIndicators` controls the indicator of the scrolling direction.
-- `contentInsetAdjustmentBehavior` is `.never`, so the scroll view adds no automatic safe-area inset and its content starts at its edges. To get UIKit's adjustment back, use `.contentInsetAdjustmentBehavior(.automatic)`.
+- `contentInsetAdjustmentBehavior` is `.never`, so the scroll view adds no automatic safe-area inset and its content starts at its edges. Mount it with `safeArea` to keep the whole scroll view inside the safe area, or use `.contentInsetAdjustmentBehavior(.automatic)` to let content scroll under bars while starting clear of them.
 - Bouncing keeps UIKit's defaults: content shorter than the scroll view doesn't bounce unless you turn on `alwaysBounceVertical` or `alwaysBounceHorizontal`.
 
 Modifiers return the same scroll view as `Self`:
@@ -389,9 +398,9 @@ Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` o
 
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch`, `UISlider`, `UITextField` and `UITextView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, and `HScroll` / `VScroll`.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch`, `UISlider`, `UITextField` and `UITextView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, `HScroll` / `VScroll`, and safe-area mounting.
 
-Planned: safe-area padding and an example app.
+Planned: an example app.
 
 The API may change before 1.0.
 

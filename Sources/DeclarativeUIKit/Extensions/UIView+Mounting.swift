@@ -3,10 +3,12 @@ import UIKit
 @MainActor
 public extension UIView {
 
-    /// Adds `content` as a subview and pins its four directional edges to this view's edges.
+    /// Adds `content` as a subview and pins its four directional edges to this view.
     ///
-    /// The content always fills the receiver's bounds. No safe-area inset is applied here;
-    /// safe-area avoidance is a separate structural modifier.
+    /// By default every edge is pinned to this view's own edge, so the content fills its
+    /// bounds. The edges named in `safeArea` are pinned to this view's `safeAreaLayoutGuide`
+    /// instead, so the content, and any background it draws, stays inside the safe area on
+    /// those edges and follows it when it changes.
     ///
     /// A view is meant to be mounted once. If the content already has a superview, that is
     /// reported and the content is removed from it first, which drops every constraint tying
@@ -18,7 +20,7 @@ public extension UIView {
     /// - Returns: The same instance that was passed in, keeping its concrete type so
     ///   type-specific modifiers stay available.
     @discardableResult
-    func addContent<Content: UIView>(_ content: Content) -> Content {
+    func addContent<Content: UIView>(_ content: Content, safeArea: LayoutEdges = []) -> Content {
         precondition(
             content !== self,
             "addContent cannot mount a view into itself."
@@ -40,11 +42,20 @@ public extension UIView {
 
         addSubview(content)
         content.translatesAutoresizingMaskIntoConstraints = false
+        let guide = safeAreaLayoutGuide
         NSLayoutConstraint.activate([
-            content.leadingAnchor.constraint(equalTo: leadingAnchor),
-            content.trailingAnchor.constraint(equalTo: trailingAnchor),
-            content.topAnchor.constraint(equalTo: topAnchor),
-            content.bottomAnchor.constraint(equalTo: bottomAnchor)
+            content.leadingAnchor.constraint(
+                equalTo: safeArea.contains(.leading) ? guide.leadingAnchor : leadingAnchor
+            ),
+            content.trailingAnchor.constraint(
+                equalTo: safeArea.contains(.trailing) ? guide.trailingAnchor : trailingAnchor
+            ),
+            content.topAnchor.constraint(
+                equalTo: safeArea.contains(.top) ? guide.topAnchor : topAnchor
+            ),
+            content.bottomAnchor.constraint(
+                equalTo: safeArea.contains(.bottom) ? guide.bottomAnchor : bottomAnchor
+            )
         ])
 
         return content
