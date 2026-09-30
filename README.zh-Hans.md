@@ -30,11 +30,11 @@ view.addVStack(alignment: .leading, spacing: 4) {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/<owner>/DeclarativeUIKit.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeUIKit.git", from: "0.1.0")
 ]
 ```
 
-或在 Xcode 中选择 File → Add Package Dependencies。目前尚未发布远程版本，请先以本地 package 的方式引用。
+或在 Xcode 中选择 File → Add Package Dependencies，输入 `https://github.com/nothingsh/DeclarativeUIKit`。
 
 ## 用法
 

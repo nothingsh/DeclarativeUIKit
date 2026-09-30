@@ -30,11 +30,11 @@ Swift Package Manager. In `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/<owner>/DeclarativeUIKit.git", from: "0.1.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeUIKit.git", from: "0.1.0")
 ]
 ```
 
-Or in Xcode, File → Add Package Dependencies. No remote version has been published yet; for now, reference it as a local package.
+Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeUIKit`.
 
 ## Usage
 
