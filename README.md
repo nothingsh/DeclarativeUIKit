@@ -148,6 +148,10 @@ title.text("Updated")   // later updates go through the same reference
 | `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityIdentifier` |
 | `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode` |
 | `UIImageView` | `image`, `highlightedImage` |
+| `UIControl` and any subclass | `isEnabled`, `isSelected`, `isHighlighted` |
+| `UIButton` | `title`, `titleColor`, `image`, `backgroundImage`, each with `for state: UIControl.State = .normal` |
+| `UISwitch` | `isOn`, `onTintColor` |
+| `UISlider` | `value`, `minimumValue`, `maximumValue`, `minimumTrackTintColor`, `maximumTrackTintColor` |
 
 Each modifier takes the same type as the UIKit property it sets. They are not an exhaustive mirror of UIKit; for anything else, use `configure`, which hands you the view with its concrete type:
 
@@ -161,6 +165,25 @@ let avatar = UIImageView()
 
 - `font(textStyle:)` uses the system font for that text style and turns on `adjustsFontForContentSizeCategory`, so the label follows Dynamic Type. `font(_:)` only sets the font, exactly like the UIKit property.
 - `numberOfLines(0)` lets a label wrap; under Auto Layout its height follows the available width.
+
+Button modifiers set one value per control state, through UIKit's `setTitle(_:for:)` and its siblings, so the states never overwrite each other. A state without its own value falls back to `.normal`, as in UIKit. The library doesn't use `UIButton.Configuration`.
+
+```swift
+let play = UIButton(type: .system)
+    .title("Play")
+    .title("Pause", for: .selected)
+    .image(playIcon)
+    .image(pauseIcon, for: .selected)
+
+let volume = UISlider()
+    .minimumValue(0)
+    .maximumValue(10)
+    .value(7)
+```
+
+- Events use UIKit's own target–action: `play.addTarget(self, action: #selector(togglePlayback), for: .touchUpInside)`. The modifiers add no targets and no closure handlers.
+- Setting a value with `isOn` or `value` is not a user event and sends no `.valueChanged`, as with the UIKit properties.
+- `UISlider` clamps `value` to its current range, so set `minimumValue` and `maximumValue` before `value`.
 
 ### Padding
 
@@ -345,9 +368,9 @@ Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` o
 
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, and `HScroll` / `VScroll`.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch` and `UISlider`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, and `HScroll` / `VScroll`.
 
-Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, and an example app.
+Planned: property modifiers for text input, safe-area padding, and an example app.
 
 The API may change before 1.0.
 
