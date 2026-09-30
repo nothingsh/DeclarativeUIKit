@@ -5,15 +5,14 @@ A lightweight declarative layout library for UIKit, built on plain `UIView` and 
 It introduces no custom rendering layer and no parallel view hierarchy. What you get back is always a real `UIView` or subclass, so it mixes freely with existing UIKit code.
 
 ```swift
-let name = UILabel()
-name.text = "Ada Lovelace"
-
-let role = UILabel()
-role.text = "Mathematician"
-
 view.addVStack(alignment: .leading, spacing: 4) {
-    name
-    role
+    UILabel()
+        .text("Ada Lovelace")
+        .font(textStyle: .headline)
+    UILabel()
+        .text("Mathematician")
+        .font(textStyle: .subheadline)
+        .textColor(.secondaryLabel)
 }
 ```
 
@@ -132,11 +131,45 @@ An expression that is not a `UIView` fails to compile rather than being silently
 
 A `UIView` belongs to one parent, so the same instance must not appear twice in one content closure. That is a programming error: it traps with a message instead of quietly collapsing into a single element.
 
+### Property modifiers
+
+Property modifiers set a UIKit property on the receiver and return the same instance as `Self`, so the concrete type survives the chain and type-specific modifiers stay available after general ones. When the same property is set twice, the last call wins.
+
+```swift
+let title = UILabel()
+    .text("Title")
+    .font(textStyle: .title2)
+    .numberOfLines(0)
+    .accessibilityIdentifier("title")
+
+title.text("Updated")   // later updates go through the same reference
+```
+
+| Type | Modifiers |
+| --- | --- |
+| `UIView` and any subclass | `configure`, `backgroundColor`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityIdentifier` |
+| `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode` |
+| `UIImageView` | `image`, `highlightedImage` |
+
+Each modifier takes the same type as the UIKit property it sets. They are not an exhaustive mirror of UIKit; for anything else, use `configure`, which hands you the view with its concrete type:
+
+```swift
+let avatar = UIImageView()
+    .image(photo)
+    .contentMode(.scaleAspectFill)
+    .clipsToBounds(true)
+    .configure { $0.layer.cornerRadius = 24 }
+```
+
+- `font(textStyle:)` uses the system font for that text style and turns on `adjustsFontForContentSizeCategory`, so the label follows Dynamic Type. `font(_:)` only sets the font, exactly like the UIKit property.
+- `numberOfLines(0)` lets a label wrap; under Auto Layout its height follows the available width.
+- `isHidden(_:)` hides the receiver only. If a structural modifier such as `padding` has wrapped the view, the wrapper stays visible and keeps its space; hide the wrapper instead.
+
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, and `UIViewBuilder` with `HStack` and `VStack`.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, and property modifiers for `UIView`, `UILabel` and `UIImageView`.
 
-Planned: property modifiers for common controls, `padding` and `frame`, `padding(safeArea:)`, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
+Planned: property modifiers for buttons, switches, sliders and text input, `padding` and `frame`, `padding(safeArea:)`, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
 
 The API may change before 1.0.
 

@@ -34,4 +34,11 @@ final class LayoutTestHost {
         viewController.additionalSafeAreaInsets = insets
         layout()
     }
+
+    @available(iOS 17.0, *)
+    func setPreferredContentSizeCategory(_ category: UIContentSizeCategory) {
+        viewController.traitOverrides.preferredContentSizeCategory = category
+        viewController.view.updateTraitsIfNeeded()
+        layout()
+    }
 }
