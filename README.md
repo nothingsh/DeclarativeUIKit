@@ -293,11 +293,61 @@ let header = HStack {
 - For a fixed gap, use `frame` on an empty view or the stack's `spacing`.
 - These priorities are UIKit's content hugging and compression resistance, not SwiftUI's `layoutPriority`: they only decide between views that would otherwise be sized from their intrinsic content size.
 
+### Scroll views
+
+`HScroll` and `VScroll` are scrolling stacks: the elements you list are arranged by an embedded `HStack` or `VStack`, so there is no need to write a stack inside. Both are `UIScrollView` subclasses, so the delegate, `contentOffset` and every other native scroll view API stay available; the library never sets the delegate.
+
+```swift
+init(alignment: VerticalAlignment = .center, spacing: CGFloat = 0, showsIndicators: Bool = true,
+     @UIViewBuilder content: () -> [UIView])     // HScroll
+init(alignment: HorizontalAlignment = .center, spacing: CGFloat = 0, showsIndicators: Bool = true,
+     @UIViewBuilder content: () -> [UIView])     // VScroll
+```
+
+```swift
+let tagRow = HScroll(spacing: 8, showsIndicators: false) {
+    for name in tagNames { chip(name) }
+}
+.padding(.horizontal, 16)
+
+view.addVScroll(alignment: .fill, spacing: 12) {
+    title
+    body
+    tagRow
+}
+.padding(16)
+```
+
+- `alignment`, `spacing` and the content closure mean the same as for `HStack` and `VStack`, and take the same defaults. `addHScroll` and `addVScroll` take the same parameters, mount through `addContent`, and return the scroll view.
+- The embedded stack's edges are pinned to the `contentLayoutGuide`, so the elements decide the scrollable length. On the other axis the stack is pinned to the `frameLayoutGuide`: a `VScroll`'s stack is as wide as the scroll view, an `HScroll`'s stack as tall, and `alignment` places the elements across it. When the scroll view resizes or an element changes, such as a label wrapping onto more lines, the content size follows.
+- Content shorter than the scroll view keeps its own length and is not stretched to fill it. An empty `VScroll {}` has a content size of zero along the scrolling axis.
+- The scrolling axis is unbounded, so a `Spacer` in a scroll view is only `minLength` long.
+- A scroll view has no intrinsic size along its scrolling axis. Nested in a stack, an `HScroll` takes its height from its elements but needs its width from outside, and a `VScroll` the reverse: use `.fill` alignment in the enclosing stack, as above, or `frame`. With `.leading`, `.center` or `.trailing` it collapses to zero length.
+- `showsIndicators` controls the indicator of the scrolling direction.
+- `contentInsetAdjustmentBehavior` is `.never`, so the scroll view adds no automatic safe-area inset and its content starts at its edges. To get UIKit's adjustment back, use `.contentInsetAdjustmentBehavior(.automatic)`.
+- Bouncing keeps UIKit's defaults: content shorter than the scroll view doesn't bounce unless you turn on `alwaysBounceVertical` or `alwaysBounceHorizontal`.
+
+Modifiers return the same scroll view as `Self`:
+
+| Type | Modifiers |
+| --- | --- |
+| `HScroll`, `VScroll` | `showsIndicators`, `alignment`, `spacing`, `padding(_ length:)`, `padding(_ edges:_ length:)` |
+| `UIScrollView` | `bounces`, `alwaysBounceHorizontal`, `alwaysBounceVertical`, `contentInsetAdjustmentBehavior` |
+
+`alignment`, `spacing` and `padding` configure the embedded stack. Padding lies inside the scrolled content, so it scrolls with the elements and counts toward the content size. For any other stack setting, such as `distribution`, the other `padding` forms or a stack `background`, use the read-only `stack` property:
+
+```swift
+VScroll { rows }
+    .configure { $0.stack.distribution(.equalSpacing).background { card } }
+```
+
+Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` or `UITableView` for long, reusable content.
+
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, and `Spacer` with layout priority modifiers.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, and `HScroll` / `VScroll`.
 
-Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, `HScroll` / `VScroll`, and an example app.
+Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, and an example app.
 
 The API may change before 1.0.
 
