@@ -14,7 +14,7 @@ final class SpacerTests: XCTestCase {
     func testSpacerTakesTheRemainingLengthOnTheStackAxisOnly() {
         let hHost = LayoutTestHost(size: CGSize(width: 200, height: 100))
         let hSpacer = Spacer(minLength: 16)
-        hHost.rootView.addHStack(spacing: 0) {
+        hHost.rootView.addHStack {
             fixedSizeView(width: 20, height: 20)
             hSpacer
             fixedSizeView(width: 30, height: 20)
@@ -25,7 +25,7 @@ final class SpacerTests: XCTestCase {
 
         let vHost = LayoutTestHost(size: CGSize(width: 100, height: 200))
         let vSpacer = Spacer(minLength: 16)
-        vHost.rootView.addVStack(spacing: 0) {
+        vHost.rootView.addVStack {
             fixedSizeView(width: 20, height: 20)
             vSpacer
             fixedSizeView(width: 20, height: 30)
@@ -40,7 +40,7 @@ final class SpacerTests: XCTestCase {
         let spacers = [Spacer(), Spacer(), Spacer()]
         let first = label("First")
         let second = label("Second")
-        host.rootView.addHStack(spacing: 0) {
+        host.rootView.addHStack {
             spacers[0]
             first
             spacers[1]
@@ -62,7 +62,7 @@ final class SpacerTests: XCTestCase {
         let host = LayoutTestHost(size: CGSize(width: 200, height: 100))
         let text = label(String(repeating: "Long text ", count: 10))
         let spacer = Spacer(minLength: 16)
-        host.rootView.addHStack(spacing: 0) {
+        host.rootView.addHStack {
             text
             spacer
             fixedSizeView(width: 30, height: 20)
@@ -79,7 +79,7 @@ final class SpacerTests: XCTestCase {
         let hugging = label("B")
         // With equal priorities UIKit stretches the first label, so the modifier has to
         // move the extra width to the second.
-        wideHost.rootView.addHStack(spacing: 0) {
+        wideHost.rootView.addHStack {
             hugging
             stretched
         }
@@ -93,7 +93,7 @@ final class SpacerTests: XCTestCase {
             .compressionResistancePriority(.defaultLow, for: .horizontal)
         // With equal priorities UIKit compresses the last label, so the modifier has to
         // move the shortfall to the first.
-        narrowHost.rootView.addHStack(spacing: 0) {
+        narrowHost.rootView.addHStack {
             compressed
             resisting
         }

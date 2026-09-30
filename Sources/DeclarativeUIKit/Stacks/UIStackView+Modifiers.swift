@@ -3,10 +3,10 @@ import UIKit
 @MainActor
 public extension UIStackView {
 
-    /// Sets the distance between elements. `nil` uses the UIKit system spacing.
+    /// Sets the distance between elements.
     @discardableResult
-    func spacing(_ value: CGFloat?) -> Self {
-        self.spacing = value ?? UIStackView.spacingUseSystem
+    func spacing(_ value: CGFloat) -> Self {
+        self.spacing = value
         return self
     }
 

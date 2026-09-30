@@ -11,7 +11,7 @@ public extension UIView {
     @discardableResult
     func addHStack(
         alignment: VerticalAlignment = .center,
-        spacing: CGFloat? = nil,
+        spacing: CGFloat = 0,
         @UIViewBuilder content: () -> [UIView]
     ) -> HStack {
         addContent(HStack(alignment: alignment, spacing: spacing, content: content))
@@ -25,7 +25,7 @@ public extension UIView {
     @discardableResult
     func addVStack(
         alignment: HorizontalAlignment = .center,
-        spacing: CGFloat? = nil,
+        spacing: CGFloat = 0,
         @UIViewBuilder content: () -> [UIView]
     ) -> VStack {
         addContent(VStack(alignment: alignment, spacing: spacing, content: content))

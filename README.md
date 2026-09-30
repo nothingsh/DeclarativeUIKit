@@ -63,8 +63,8 @@ A view is meant to be mounted once. Calling this again for content that already 
 `HStack` and `VStack` arrange views along an axis. Both are `UIStackView` subclasses, so every native stack API stays available.
 
 ```swift
-init(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, @UIViewBuilder content: () -> [UIView])   // VStack
-init(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, @UIViewBuilder content: () -> [UIView])     // HStack
+init(alignment: HorizontalAlignment = .center, spacing: CGFloat = 0, @UIViewBuilder content: () -> [UIView])   // VStack
+init(alignment: VerticalAlignment = .center, spacing: CGFloat = 0, @UIViewBuilder content: () -> [UIView])     // HStack
 ```
 
 ```swift
@@ -81,7 +81,7 @@ view.addContent(column)
 ```
 
 - `alignment` is the cross axis. A `VStack` takes a `HorizontalAlignment` — `leading`, `center`, `trailing`, `fill`. An `HStack` takes a `VerticalAlignment` — `top`, `center`, `bottom`, `firstTextBaseline`, `lastTextBaseline`, `fill`. The baseline cases use UIKit's own baseline alignment. `fill` has no SwiftUI counterpart and stretches every element across the cross axis.
-- `spacing` defaults to `nil`, which means `UIStackView.spacingUseSystem`. That is UIKit's system spacing; it is not a pixel-for-pixel match for SwiftUI's contextual spacing. Pass `0` for no spacing.
+- `spacing` defaults to `0`, as in `UIStackView`, so the gaps you see are the ones you write. This differs from SwiftUI, whose default spacing is contextual.
 - `distribution` is UIKit's own default, `.fill`, and is configured with a modifier rather than an initializer argument.
 - Constructing a stack does not mount it anywhere, and the elements keep their declaration order.
 
@@ -108,7 +108,7 @@ view.addVStack {
 .distribution(.equalSpacing)
 ```
 
-`spacing(_:)` and `distribution(_:)` work on any `UIStackView`; passing `nil` to `spacing(_:)` restores the system spacing. `alignment(_:)` is defined per direction, so it takes a `VerticalAlignment` on `HStack` and a `HorizontalAlignment` on `VStack`.
+`spacing(_:)` and `distribution(_:)` work on any `UIStackView`. `alignment(_:)` is defined per direction, so it takes a `VerticalAlignment` on `HStack` and a `HorizontalAlignment` on `VStack`.
 
 ### Content closures
 

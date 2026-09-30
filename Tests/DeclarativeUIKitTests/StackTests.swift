@@ -19,30 +19,12 @@ final class StackTests: XCTestCase {
 
         XCTAssertEqual(stack.axis, .vertical)
         XCTAssertEqual(stack.alignment, .center)
-        XCTAssertEqual(stack.spacing, UIStackView.spacingUseSystem)
+        XCTAssertEqual(stack.spacing, 0)
         XCTAssertEqual(stack.distribution, .fill)
         XCTAssertNil(stack.superview, "Constructing a stack must not mount it anywhere.")
         XCTAssertEqual(stack.arrangedSubviews.count, 2)
 
         XCTAssertEqual(HStack { label("First") }.axis, .horizontal)
-        XCTAssertEqual(VStack(spacing: 0) {}.spacing, 0)
-    }
-
-    func testSystemSpacingIsWiderThanNoSpacing() {
-        let systemSpaced = VStack {
-            label("First")
-            label("Second")
-        }
-        let unspaced = VStack(spacing: 0) {
-            label("First")
-            label("Second")
-        }
-
-        XCTAssertGreaterThan(
-            systemSpaced.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height,
-            unspaced.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height,
-            "nil spacing must resolve to real system spacing, not 0."
-        )
     }
 
     func testAlignmentsMapToUIKitValues() {
@@ -66,7 +48,6 @@ final class StackTests: XCTestCase {
         XCTAssertEqual(stack.spacing, 12)
         XCTAssertEqual(stack.distribution, .equalSpacing)
         XCTAssertEqual(stack.alignment, .trailing)
-        XCTAssertEqual(VStack(spacing: 0) {}.spacing(nil).spacing, UIStackView.spacingUseSystem)
 
         // Configuring a stack after mounting it is supported.
         let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
