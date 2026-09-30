@@ -68,7 +68,7 @@ final class StackTests: XCTestCase {
         XCTAssertEqual(stack.alignment, .trailing)
         XCTAssertEqual(VStack(spacing: 0) {}.spacing(nil).spacing, UIStackView.spacingUseSystem)
 
-        // Configuring a stack after mounting it is supported; wrapping one is not.
+        // Configuring a stack after mounting it is supported.
         let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
         let mounted: VStack = host.rootView.addVStack {}.spacing(8).alignment(.leading)
         XCTAssertEqual(mounted.spacing, 8)

@@ -145,7 +145,7 @@ title.text("Updated")   // later updates go through the same reference
 
 | Type | Modifiers |
 | --- | --- |
-| `UIView` and any subclass | `configure`, `backgroundColor`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityIdentifier` |
+| `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityIdentifier` |
 | `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode` |
 | `UIImageView` | `image`, `highlightedImage` |
 
@@ -161,7 +161,6 @@ let avatar = UIImageView()
 
 - `font(textStyle:)` uses the system font for that text style and turns on `adjustsFontForContentSizeCategory`, so the label follows Dynamic Type. `font(_:)` only sets the font, exactly like the UIKit property.
 - `numberOfLines(0)` lets a label wrap; under Auto Layout its height follows the available width.
-- `isHidden(_:)` hides the receiver only. If a structural modifier has wrapped the view, the wrapper stays visible and keeps its space; hide the wrapper instead.
 
 ### Padding
 
@@ -226,11 +225,51 @@ let banner = UIImageView().frame(width: 320).frame(aspectRatio: 16 / 9)   // 320
 - Only the constraints `frame` created are updated or removed. Size constraints you add yourself are never touched.
 - A negative or non-finite fixed length or minimum, a negative or NaN maximum, or a minimum above the maximum, or an aspect ratio that is not finite and positive is a programming error and traps with a message.
 
+### Background and overlay
+
+`background(_:)` sets the view's own `backgroundColor`. A view decoration is added as a subview of the view it decorates and pinned with constraints. Every form returns the same view as `Self`. No container view is inserted and there is no `ZStack`.
+
+```swift
+// UIView
+func background(_ color: UIColor?) -> Self
+func overlay(alignment: LayoutAlignment = .fill, content: () -> UIView) -> Self
+
+// UIStackView
+func background(alignment: LayoutAlignment = .fill, content: () -> UIView) -> Self
+```
+
+```swift
+let card = VStack(alignment: .leading, spacing: 4) {
+    name
+    role
+}
+.padding(16)
+.background { UIView().background(.secondarySystemBackground) }
+
+let title = UILabel().text("New").background(.systemYellow)
+
+let avatar = UIImageView()
+    .frame(width: 48, height: 48)
+    .image(photo)
+    .overlay(alignment: .bottomTrailing) {
+        UIView().background(.systemGreen).frame(width: 12, height: 12)
+    }
+```
+
+- `background(_:)` works on any view and only sets `backgroundColor`; it is the library's modifier for that property. A stack doesn't draw its `backgroundColor` on iOS 13; to support iOS 13, give a stack a colored view with `background { ... }` instead.
+- `background { ... }` is a stack modifier. The view goes behind the stack's content and, with the default `.fill`, covers the whole stack, padding included. To put a background view behind a single view, put that view in a stack: `VStack { label }.padding(8).background { badgeShape }`.
+- `overlay` works on any view and goes in front of the view's current subviews and, with the default `.fill`, covers the whole view. Subviews added later, such as arranged subviews appended afterwards, go in front of it.
+- The decorated view's content decides its size. With `.fill`, the decoration's hugging and compression resistance are set to `.fittingSizeLevel`, so a large image can't enlarge the view. A decoration whose own subviews require a minimum size, such as a stack of labels, still can.
+- `LayoutAlignment` is `fill`, `center`, `top`, `bottom`, `leading`, `trailing`, `topLeading`, `topTrailing`, `bottomLeading` or `bottomTrailing`. `fill` stretches the decoration over the view. The other cases keep the decoration's own size and place it at that position. `leading` and `trailing` mirror in right-to-left languages.
+- View decorations add up, as in SwiftUI: a later `background { ... }` goes further back, and a later `overlay` goes further front.
+- A decoration view is meant to be added once. If it already has a superview, that is reported and it is removed first, dropping its existing constraints, then added again.
+- Touches follow UIKit hit testing. A background sits behind the content, so it never blocks controls. An interactive overlay receives touches inside its bounds and blocks what is behind it; use `.isUserInteractionEnabled(false)` to let touches through. A decoration isn't clipped, but touches outside the decorated view's bounds don't reach it, as usual in UIKit.
+
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, and `frame` size constraints.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, `frame` size constraints, and `background` and `overlay`.
 
-Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
+Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
 
 The API may change before 1.0.
 

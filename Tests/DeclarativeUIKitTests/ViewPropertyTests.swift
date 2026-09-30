@@ -13,7 +13,6 @@ final class ViewPropertyTests: XCTestCase {
         let label = UILabel()
 
         let result: UILabel = label
-            .backgroundColor(.red)
             .alpha(0.2)
             .alpha(0.5)
             .isHidden(true)
@@ -26,7 +25,6 @@ final class ViewPropertyTests: XCTestCase {
             .text("标题")
 
         XCTAssertTrue(result === label)
-        XCTAssertEqual(result.backgroundColor, .red)
         XCTAssertEqual(result.alpha, 0.5, "The last modifier of the same property wins.")
         XCTAssertTrue(result.isHidden)
         XCTAssertTrue(result.isUserInteractionEnabled)

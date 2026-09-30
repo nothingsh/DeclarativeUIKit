@@ -11,18 +11,11 @@ public extension UIView {
     }
 
     @discardableResult
-    func backgroundColor(_ value: UIColor?) -> Self {
-        self.backgroundColor = value
-        return self
-    }
-
-    @discardableResult
     func alpha(_ value: CGFloat) -> Self {
         self.alpha = value
         return self
     }
 
-    /// Hides this view only. A wrapper that a structural modifier put around it stays visible.
     @discardableResult
     func isHidden(_ value: Bool) -> Self {
         self.isHidden = value
