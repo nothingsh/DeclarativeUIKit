@@ -5,10 +5,16 @@ A lightweight declarative layout library for UIKit, built on plain `UIView` and 
 It introduces no custom rendering layer and no parallel view hierarchy. What you get back is always a real `UIView` or subclass, so it mixes freely with existing UIKit code.
 
 ```swift
-let title = UILabel()
-title.text = "Profile"
+let name = UILabel()
+name.text = "Ada Lovelace"
 
-view.addContent(title)
+let role = UILabel()
+role.text = "Mathematician"
+
+view.addVStack(alignment: .leading, spacing: 4) {
+    name
+    role
+}
 ```
 
 ## Requirements
@@ -55,11 +61,82 @@ A view is meant to be mounted once. Calling this again for content that already 
 
 Structural modifiers are composed before mounting, as in `view.addContent(card.padding(16))`. Wrapping a view that is already mounted is not supported.
 
+### Stacks
+
+`HStack` and `VStack` arrange views along an axis. Both are `UIStackView` subclasses, so every native stack API stays available.
+
+```swift
+init(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, @UIViewBuilder content: () -> [UIView])   // VStack
+init(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, @UIViewBuilder content: () -> [UIView])     // HStack
+```
+
+```swift
+let column = VStack(alignment: .leading, spacing: 4) {
+    name
+    role
+    HStack(spacing: 8) {
+        icon
+        detail
+    }
+}
+
+view.addContent(column)
+```
+
+- `alignment` is the cross axis. A `VStack` takes a `HorizontalAlignment` — `leading`, `center`, `trailing`, `fill`. An `HStack` takes a `VerticalAlignment` — `top`, `center`, `bottom`, `firstTextBaseline`, `lastTextBaseline`, `fill`. The baseline cases use UIKit's own baseline alignment. `fill` has no SwiftUI counterpart and stretches every element across the cross axis.
+- `spacing` defaults to `nil`, which means `UIStackView.spacingUseSystem`. That is UIKit's system spacing; it is not a pixel-for-pixel match for SwiftUI's contextual spacing. Pass `0` for no spacing.
+- `distribution` is UIKit's own default, `.fill`, and is configured with a modifier rather than an initializer argument.
+- Constructing a stack does not mount it anywhere, and the elements keep their declaration order.
+
+To build and mount in one step:
+
+```swift
+view.addVStack(alignment: .leading, spacing: 4) {
+    name
+    role
+}
+```
+
+`addHStack` and `addVStack` take the same parameters as the initializers, mount the new stack through `addContent`, and return it. Like `addContent`, they mount to the parent's edges and apply no safe-area inset.
+
+Stack modifiers return the stack, so it can be configured after construction or after mounting:
+
+```swift
+view.addVStack {
+    name
+    role
+}
+.spacing(12)
+.alignment(.leading)
+.distribution(.equalSpacing)
+```
+
+`spacing(_:)` and `distribution(_:)` work on any `UIStackView`; passing `nil` to `spacing(_:)` restores the system spacing. `alignment(_:)` is defined per direction, so it takes a `VerticalAlignment` on `HStack` and a `HorizontalAlignment` on `VStack`.
+
+### Content closures
+
+Stack content is written with `@UIViewBuilder`, which collects views in declaration order and accepts:
+
+| Form | Example |
+| --- | --- |
+| A view | `UILabel()` |
+| An optional view | `subtitle`, where `subtitle: UILabel?` — `nil` contributes nothing |
+| An array of views | `rows`, where `rows: [UIView]` |
+| `if` and `if` / `else` | `if isEditing { field } else { label }` |
+| `switch` | `switch state { case .empty: placeholder; default: list }` |
+| `for` | `for item in items { row(item) }` |
+| `if #available` | `if #available(iOS 14, *) { modernView }` |
+| Nothing at all | `VStack {}` |
+
+An expression that is not a `UIView` fails to compile rather than being silently dropped.
+
+A `UIView` belongs to one parent, so the same instance must not appear twice in one content closure. That is a programming error: it traps with a message instead of quietly collapsing into a single element.
+
 ## Roadmap
 
-Available today: the Swift package foundation and `addContent` mounting.
+Available today: the Swift package foundation, `addContent` mounting, and `UIViewBuilder` with `HStack` and `VStack`.
 
-Planned: `UIViewBuilder` with `HStack` / `VStack`, property modifiers for common controls, `padding` and `frame`, `padding(safeArea:)`, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
+Planned: property modifiers for common controls, `padding` and `frame`, `padding(safeArea:)`, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
 
 The API may change before 1.0.
 
