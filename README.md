@@ -396,11 +396,23 @@ VScroll { rows }
 
 Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` or `UITableView` for long, reusable content.
 
+## Example app
+
+`Example/Example.xcodeproj` is a small iOS app that uses the library as a local package. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. It has three screens:
+
+- **Profile card** — stacks, `frame`, a card `background` and a status badge placed with `overlay`. The buttons change the bio label and the badge through references the view controller keeps, and the card resizes with them.
+- **Form** — text fields, a text view that grows with its text, a switch and a slider, wired with UIKit's own delegates and target–action.
+- **Scrolling** — `HScroll` rows inside a `VScroll`, and rows appended to a stack at runtime.
+
+All text uses `font(textStyle:)`, so the screens follow Dynamic Type, and they adapt to rotation. Content closures run once; later changes are made through the views themselves, not through data binding.
+
+Each screen mounts its scroll view with `safeArea: .all`, so content stays clear of the navigation bar, the home indicator and, in landscape, the sensor housing, while the screen's background color still fills the whole display.
+
+The app's deployment target is iOS 15.0, the lowest the current Xcode can build; see [Known limitations](#known-limitations).
+
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch`, `UISlider`, `UITextField` and `UITextView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, `HScroll` / `VScroll`, and safe-area mounting.
-
-Planned: an example app.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel`, `UIImageView`, `UIControl`, `UIButton`, `UISwitch`, `UISlider`, `UITextField` and `UITextView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, `Spacer` with layout priority modifiers, `HScroll` / `VScroll`, safe-area mounting, and an example app.
 
 The API may change before 1.0.
 

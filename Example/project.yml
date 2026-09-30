@@ -1,0 +1,34 @@
+name: Example
+options:
+  bundleIdPrefix: dev.declarativeuikit
+  deploymentTarget:
+    iOS: "15.0"
+  developmentLanguage: en
+packages:
+  DeclarativeUIKit:
+    path: ..
+targets:
+  Example:
+    type: application
+    platform: iOS
+    sources:
+      - Example
+    dependencies:
+      - package: DeclarativeUIKit
+    settings:
+      base:
+        INFOPLIST_FILE: Example/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: dev.declarativeuikit.Example
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+schemes:
+  Example:
+    build:
+      targets:
+        Example: all
+    run:
+      config: Debug
+    archive:
+      config: Release
