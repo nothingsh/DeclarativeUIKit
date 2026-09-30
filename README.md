@@ -53,12 +53,10 @@ view.addContent(customView)              // the return value can be ignored
 - Pins all four edges of the content to the parent's edges, so it always fills the bounds.
 - Uses `leadingAnchor` and `trailingAnchor`, so the layout mirrors in right-to-left languages.
 - Returns the same instance that was passed in, keeping its concrete type.
-- Applies no safe-area inset. Safe-area avoidance is a separate structural modifier — see [Roadmap](#roadmap).
+- Applies no safe-area inset. Safe-area avoidance is planned as a separate modifier — see [Roadmap](#roadmap).
 - Leaves the content's own size constraints untouched.
 
 A view is meant to be mounted once. Calling this again for content that already has a superview logs a note through `NSLog`, removes the content from its current parent — which drops the constraints tying it to the old hierarchy — and mounts it again. Constraints never accumulate, but the content moves to the front of the subview order.
-
-Structural modifiers are composed before mounting, as in `view.addContent(card.padding(16))`. Wrapping a view that is already mounted is not supported.
 
 ### Stacks
 
@@ -163,13 +161,76 @@ let avatar = UIImageView()
 
 - `font(textStyle:)` uses the system font for that text style and turns on `adjustsFontForContentSizeCategory`, so the label follows Dynamic Type. `font(_:)` only sets the font, exactly like the UIKit property.
 - `numberOfLines(0)` lets a label wrap; under Auto Layout its height follows the available width.
-- `isHidden(_:)` hides the receiver only. If a structural modifier such as `padding` has wrapped the view, the wrapper stays visible and keeps its space; hide the wrapper instead.
+- `isHidden(_:)` hides the receiver only. If a structural modifier has wrapped the view, the wrapper stays visible and keeps its space; hide the wrapper instead.
+
+### Padding
+
+Padding is a stack modifier. It sets the stack's `directionalLayoutMargins`, turns on `isLayoutMarginsRelativeArrangement` and turns off `insetsLayoutMarginsFromSafeArea`, then returns the same stack.
+
+```swift
+func padding(_ length: CGFloat) -> Self
+func padding(_ edges: LayoutEdges = .all, _ length: CGFloat = 16) -> Self
+func padding(horizontal: CGFloat, vertical: CGFloat) -> Self
+func padding(top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) -> Self
+func padding(_ edges: LayoutEdges, _ length: CGFloat, others: CGFloat) -> Self
+func padding(_ insets: NSDirectionalEdgeInsets) -> Self
+```
+
+```swift
+let card = VStack(alignment: .leading, spacing: 4) {
+    name
+    role
+}
+.padding(.horizontal, 16)
+.padding(.vertical, 12)
+```
+
+```swift
+stack.padding(horizontal: 16, vertical: 12)                   // one value per axis
+stack.padding(top: 8, leading: 16, bottom: 24, trailing: 12)  // every edge differs
+stack.padding(.top, 24, others: 8)                            // one edge, the rest alike
+```
+
+- Padding counts toward the stack's size: a stack whose content is 20 × 30 is 40 × 50 with `.padding(10)`.
+- It behaves like a property. `padding(_:_:)` changes only the edges you name and keeps the others, so `.padding(.horizontal, 16).padding(.vertical, 12)` sets all four. Every other form sets all four edges in one call. A later call replaces earlier values rather than adding to them.
+- `LayoutEdges` is an option set of `top`, `leading`, `bottom`, `trailing`, plus `horizontal`, `vertical` and `all`. Horizontal edges are `leading` and `trailing`, so they mirror in right-to-left languages.
+- Padding is fixed spacing and never includes the safe area.
+- To pad a single view, put it in a stack: `VStack { label }.padding(16)`.
+
+### Frame
+
+`frame` adds size constraints to the view itself and returns it as `Self`, so the chain keeps its concrete type. As in SwiftUI, there is one form for a fixed size and one for a size range.
+
+```swift
+func frame(width: CGFloat? = nil, height: CGFloat? = nil) -> Self
+func frame(minWidth: CGFloat? = nil, maxWidth: CGFloat? = nil,
+           minHeight: CGFloat? = nil, maxHeight: CGFloat? = nil) -> Self
+func frame(aspectRatio: CGFloat?) -> Self
+```
+
+```swift
+let avatar = UIImageView()
+    .frame(width: 48, height: 48)
+    .image(photo)
+    .contentMode(.scaleAspectFill)
+
+let button = UIButton().frame(minWidth: 88)
+let label = UILabel().frame(maxWidth: 200)
+let banner = UIImageView().frame(width: 320).frame(aspectRatio: 16 / 9)   // 320 × 180
+```
+
+- It sets `translatesAutoresizingMaskIntoConstraints` to `false` and uses required `widthAnchor` / `heightAnchor` constraints: `==` for a fixed length, `>=` for a minimum, `<=` for a maximum.
+- Each call redefines the axes it names and leaves the other axis alone. Calling `frame(width: 100)` and then `frame(width: 120)` updates the same constraint. A fixed width removes an earlier minimum or maximum width, and a range removes an earlier fixed width, so switching between them never conflicts. In the range form, naming only one bound of an axis removes the other: `frame(minWidth: 40)` after `frame(maxWidth: 200)` leaves only the minimum.
+- `.infinity` is accepted as a maximum and means no upper bound; it adds no constraint.
+- `frame(aspectRatio:)` keeps width equal to the ratio times height, as in SwiftUI (`16 / 9` is wider than tall). Pair it with a fixed width or height to derive the other length; fixing both as well conflicts. A repeated call replaces the ratio, and `nil` removes it.
+- Only the constraints `frame` created are updated or removed. Size constraints you add yourself are never touched.
+- A negative or non-finite fixed length or minimum, a negative or NaN maximum, or a minimum above the maximum, or an aspect ratio that is not finite and positive is a programming error and traps with a message.
 
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, and property modifiers for `UIView`, `UILabel` and `UIImageView`.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, and `frame` size constraints.
 
-Planned: property modifiers for buttons, switches, sliders and text input, `padding` and `frame`, `padding(safeArea:)`, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
+Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, `background` and `overlay`, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
 
 The API may change before 1.0.
 
