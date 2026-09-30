@@ -4,3 +4,12 @@
 /docs/ROADMAP.md
 /docs/superpowers/
 /docs/tasks/
+
+# Swift Package Manager and Xcode build artifacts
+/.build/
+/.swiftpm/
+/DerivedData/
+*.xcresult
+xcuserdata/
+*.xcuserstate
+.DS_Store
