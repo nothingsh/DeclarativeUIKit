@@ -265,11 +265,39 @@ let avatar = UIImageView()
 - A decoration view is meant to be added once. If it already has a superview, that is reported and it is removed first, dropping its existing constraints, then added again.
 - Touches follow UIKit hit testing. A background sits behind the content, so it never blocks controls. An interactive overlay receives touches inside its bounds and blocks what is behind it; use `.isUserInteractionEnabled(false)` to let touches through. A decoration isn't clipped, but touches outside the decorated view's bounds don't reach it, as usual in UIKit.
 
+### Spacer and layout priorities
+
+`Spacer` is an empty view that takes the remaining length along the axis of the stack it is in. Layout priorities are set with two modifiers on any view that return the same view as `Self`.
+
+```swift
+public init(minLength: CGFloat = 0)   // Spacer
+
+// UIView
+func contentHuggingPriority(_ priority: UILayoutPriority, for axis: NSLayoutConstraint.Axis) -> Self
+func compressionResistancePriority(_ priority: UILayoutPriority, for axis: NSLayoutConstraint.Axis) -> Self
+```
+
+```swift
+let header = HStack {
+    title.compressionResistancePriority(.defaultLow, for: .horizontal)
+    Spacer(minLength: 8)
+    badge
+}
+```
+
+- A spacer gives way before views with content: on the stack's axis its hugging priority is `.fittingSizeLevel`, so it absorbs the extra space and the other views keep their intrinsic size. It doesn't grow on the cross axis.
+- Several spacers in one stack share the extra space equally.
+- `minLength` is a required minimum. When the stack can't fit it, the other views shrink according to their compression resistance; lower one with `compressionResistancePriority` to choose which view gives way first. If the fixed sizes in a stack can't fit at all, the required constraints conflict and UIKit breaks one of them, as with any Auto Layout.
+- On an unbounded axis, such as the scrolling axis of a scroll view, there is no remaining length, so a spacer is only `minLength` long.
+- The axis is read when the spacer is added to a `UIStackView`, whether from a content closure or with `addArrangedSubview`. Changing that stack's `axis` afterwards isn't followed. A spacer outside a `UIStackView` has no effect, and adding it to one is reported.
+- For a fixed gap, use `frame` on an empty view or the stack's `spacing`.
+- These priorities are UIKit's content hugging and compression resistance, not SwiftUI's `layoutPriority`: they only decide between views that would otherwise be sized from their intrinsic content size.
+
 ## Roadmap
 
-Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, `frame` size constraints, and `background` and `overlay`.
+Available today: the Swift package foundation, `addContent` mounting, `UIViewBuilder` with `HStack` and `VStack`, property modifiers for `UIView`, `UILabel` and `UIImageView`, `padding` for stacks, `frame` size constraints, `background` and `overlay`, and `Spacer` with layout priority modifiers.
 
-Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, `Spacer` and layout priorities, `HScroll` / `VScroll`, and an example app.
+Planned: property modifiers for buttons, switches, sliders and text input, safe-area padding, `HScroll` / `VScroll`, and an example app.
 
 The API may change before 1.0.
 
