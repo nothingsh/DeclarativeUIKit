@@ -87,6 +87,32 @@ final class DecorationTests: XCTestCase {
         )
     }
 
+    func testOffsetMovesADecorationFromItsAlignment() {
+        func badgeFrame(_ alignment: LayoutAlignment, _ offset: CGPoint) -> CGRect {
+            let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+            let badge = fixedSizeView(width: 10, height: 10)
+            let view = fixedSizeView(width: 100, height: 60)
+                .overlay(alignment: alignment, offset: offset) { badge }
+            place(view, in: host)
+            return badge.frame
+        }
+
+        // x is positive toward the right and y toward the bottom, from where the alignment puts it.
+        XCTAssertEqual(badgeFrame(.topTrailing, CGPoint(x: 4, y: -3)), CGRect(x: 94, y: -3, width: 10, height: 10))
+        XCTAssertEqual(badgeFrame(.center, CGPoint(x: 5, y: 6)), CGRect(x: 50, y: 31, width: 10, height: 10))
+        XCTAssertEqual(badgeFrame(.bottomLeading, CGPoint(x: -2, y: 2)), CGRect(x: -2, y: 52, width: 10, height: 10))
+
+        let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+        let behind = fixedSizeView(width: 10, height: 10)
+        let stack: VStack = VStack(alignment: .fill, spacing: 0) { fixedSizeView(width: 20, height: 30) }
+            .padding(10)
+            .background(alignment: .bottom, offset: CGPoint(x: 0, y: 4)) { behind }
+        place(stack, in: host)
+        XCTAssertEqual(stack.bounds.size, CGSize(width: 40, height: 50), "An offset never resizes the view.")
+        XCTAssertEqual(behind.frame, CGRect(x: 15, y: 44, width: 10, height: 10))
+        XCTAssertTrue(stack.subviews.first === behind)
+    }
+
     func testRepeatedDecorationsKeepDeclarationOrder() {
         let content = UIView()
         let (back1, back2, front1, front2) = (UIView(), UIView(), UIView(), UIView())

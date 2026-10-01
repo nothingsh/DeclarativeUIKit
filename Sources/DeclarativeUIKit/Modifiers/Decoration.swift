@@ -27,10 +27,20 @@ extension UIView {
     /// A `fill` decoration gets the lowest hugging and compression resistance, so its own
     /// intrinsic size cannot enlarge this view.
     ///
+    /// `offset` moves the decoration from where `alignment` puts it, without resizing
+    /// anything. It is the constant of the alignment constraints and nothing more: x is
+    /// positive toward the right and y toward the bottom, and the layout direction is left
+    /// to Auto Layout. A `fill` decoration covers the whole view, so an offset for it is a
+    /// programming error.
+    ///
     /// A decoration is meant to be added once. If it already has a superview, that is
     /// reported and it is removed first, which drops its existing constraints, so they never
     /// accumulate.
-    func addDecoration(_ decoration: UIView, alignment: LayoutAlignment, behind: Bool) {
+    func addDecoration(_ decoration: UIView, alignment: LayoutAlignment, offset: CGPoint, behind: Bool) {
+        precondition(
+            alignment != .fill || offset == .zero,
+            "A fill decoration covers the whole view and takes no offset."
+        )
         if decoration.superview != nil {
             NSLog(
                 "DeclarativeUIKit: a background or overlay received %@, which already has a "
@@ -55,11 +65,11 @@ extension UIView {
                 decoration.trailingAnchor.constraint(equalTo: trailingAnchor)
             ]
         case .leading, .topLeading, .bottomLeading:
-            constraints.append(decoration.leadingAnchor.constraint(equalTo: leadingAnchor))
+            constraints.append(decoration.leadingAnchor.constraint(equalTo: leadingAnchor, constant: offset.x))
         case .trailing, .topTrailing, .bottomTrailing:
-            constraints.append(decoration.trailingAnchor.constraint(equalTo: trailingAnchor))
+            constraints.append(decoration.trailingAnchor.constraint(equalTo: trailingAnchor, constant: offset.x))
         case .center, .top, .bottom:
-            constraints.append(decoration.centerXAnchor.constraint(equalTo: centerXAnchor))
+            constraints.append(decoration.centerXAnchor.constraint(equalTo: centerXAnchor, constant: offset.x))
         }
         switch alignment {
         case .fill:
@@ -68,11 +78,11 @@ extension UIView {
                 decoration.bottomAnchor.constraint(equalTo: bottomAnchor)
             ]
         case .top, .topLeading, .topTrailing:
-            constraints.append(decoration.topAnchor.constraint(equalTo: topAnchor))
+            constraints.append(decoration.topAnchor.constraint(equalTo: topAnchor, constant: offset.y))
         case .bottom, .bottomLeading, .bottomTrailing:
-            constraints.append(decoration.bottomAnchor.constraint(equalTo: bottomAnchor))
+            constraints.append(decoration.bottomAnchor.constraint(equalTo: bottomAnchor, constant: offset.y))
         case .center, .leading, .trailing:
-            constraints.append(decoration.centerYAnchor.constraint(equalTo: centerYAnchor))
+            constraints.append(decoration.centerYAnchor.constraint(equalTo: centerYAnchor, constant: offset.y))
         }
         NSLayoutConstraint.activate(constraints)
 

@@ -25,9 +25,15 @@ public extension UIStackView {
     /// call puts its decoration further back. With `.fill`, the decoration's hugging and
     /// compression resistance are lowered so that its intrinsic size cannot enlarge the
     /// stack; a decoration whose own subviews require a minimum size still can.
+    ///
+    /// `offset` moves the decoration from where `alignment` puts it, as for `overlay`.
     @discardableResult
-    func background(alignment: LayoutAlignment = .fill, content: () -> UIView) -> Self {
-        addDecoration(content(), alignment: alignment, behind: true)
+    func background(
+        alignment: LayoutAlignment = .fill,
+        offset: CGPoint = .zero,
+        content: () -> UIView
+    ) -> Self {
+        addDecoration(content(), alignment: alignment, offset: offset, behind: true)
         return self
     }
 }
