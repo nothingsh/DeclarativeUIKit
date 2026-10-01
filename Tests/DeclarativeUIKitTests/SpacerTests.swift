@@ -35,6 +35,24 @@ final class SpacerTests: XCTestCase {
         XCTAssertEqual(vSpacer.frame.width, 0, "The minimum length must not apply to the cross axis.")
     }
 
+    func testRemainingSpacersStillShareEquallyAfterOneIsRemoved() {
+        let host = LayoutTestHost(size: CGSize(width: 200, height: 100))
+        let spacers = [Spacer(), Spacer(), Spacer()]
+        host.rootView.addHStack {
+            spacers[0]
+            fixedSizeView(width: 20, height: 20)
+            spacers[1]
+            fixedSizeView(width: 30, height: 20)
+            spacers[2]
+        }
+        host.layout()
+        XCTAssertEqual(spacers.map(\.frame.width), [50, 50, 50])
+
+        spacers[0].removeFromSuperview()
+        host.layout()
+        XCTAssertEqual(spacers.dropFirst().map(\.frame.width), [75, 75])
+    }
+
     func testSpacersShareTheRemainingLengthEqually() {
         let host = LayoutTestHost(size: CGSize(width: 200, height: 100))
         let spacers = [Spacer(), Spacer(), Spacer()]

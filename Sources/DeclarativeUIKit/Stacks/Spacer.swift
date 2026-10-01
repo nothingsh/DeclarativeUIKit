@@ -59,8 +59,9 @@ public final class Spacer: UIView {
         minimum.isActive = true
 
         // Below the default hugging of views with content, so sharing the extra space
-        // equally never stretches them.
-        if let other = stack.subviews.first(where: { $0 is Spacer && $0 !== self }) as? Spacer {
+        // equally never stretches them. Tied to every other spacer, so the rest go on
+        // sharing equally when one of them leaves the stack.
+        for case let other as Spacer in stack.subviews where other !== self {
             let equal = length(axis).constraint(equalTo: other.length(axis))
             equal.priority = .defaultLow - 1
             equal.isActive = true
