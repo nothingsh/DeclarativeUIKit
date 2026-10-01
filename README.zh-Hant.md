@@ -6,6 +6,8 @@
 
 它不引入自訂的繪製層，也不維護平行的視圖階層。你拿到的永遠是真正的 `UIView` 或其子類別，因此能與既有的 UIKit 程式碼自由混用。截圖請見[範例 App](#範例-app)。
 
+資料繫結由搭配的套件 [DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) 提供，請見[資料繫結](#資料繫結)。
+
 ```swift
 view.addVStack(alignment: .leading, spacing: 4) {
     UILabel()
@@ -17,6 +19,30 @@ view.addVStack(alignment: .leading, spacing: 4) {
         .textColor(.secondaryLabel)
 }
 ```
+
+## 目錄
+
+- [系統需求](#系統需求)
+- [安裝](#安裝)
+- [用法](#用法)
+  - [`addContent(_:)`](#addcontent_)
+  - [Stack](#stack)
+  - [內容閉包](#內容閉包)
+  - [屬性 modifier](#屬性-modifier)
+  - [Padding](#padding)
+  - [Frame](#frame)
+  - [Background 與 overlay](#background-與-overlay)
+  - [Spacer 與版面優先權](#spacer-與版面優先權)
+  - [捲動視圖](#捲動視圖)
+- [資料繫結](#資料繫結)
+- [範例 App](#範例-app)
+  - [個人資料卡片](#個人資料卡片)
+  - [表單](#表單)
+  - [捲動](#捲動)
+- [發展藍圖](#發展藍圖)
+- [已知限制](#已知限制)
+- [開發](#開發)
+- [授權條款](#授權條款)
 
 ## 系統需求
 
@@ -215,7 +241,7 @@ let notes = UITextView()
 
 - `placeholder` 只存在於 `UITextField` 上，因為 UIKit 中的 `UITextView` 沒有佔位文字，本函式庫也不會額外加入。
 - 文字視圖的尺寸取決於 `isScrollEnabled`。為 `false` 時，它在給定寬度下與文字一樣高，並隨文字增加而變高，就像多行 label。為 `true`（UIKit 的預設值）時，它沒有固有高度：需要透過 `frame` 或約束給它一個高度，較長的文字會在其內部捲動。
-- 委派、編輯行為與鍵盤仍然是 UIKit 自己的。modifier 不設定委派，也沒有雙向繫結、輸入驗證或鍵盤避讓。
+- 委派、編輯行為與鍵盤仍然是 UIKit 自己的。modifier 不設定委派，也沒有雙向繫結、輸入驗證或鍵盤避讓。繫結請見[資料繫結](#資料繫結)。
 
 ### Padding
 
@@ -397,6 +423,27 @@ VScroll { rows }
 ```
 
 鍵盤避讓與可重複使用的清單不在本函式庫範圍內；較長、需要重複使用的內容請使用 `UICollectionView` 或 `UITableView`。
+
+## 資料繫結
+
+DeclarativeUIKit 只負責版面配置：內容閉包只執行一次，函式庫本身不提供繫結。之後需要變化或回報事件的視圖，必須存成屬性，再手動連接。
+
+[DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) 是搭配的套件，用來省掉這一步。它為 UIKit 的控制項、捲動視圖和手勢提供 Combine publisher，並提供一組 modifier，讓視圖在宣告它的地方直接繫結到 publisher：
+
+```swift
+view.addVStack(alignment: .fill, spacing: 12) {
+    UILabel()
+        .font(textStyle: .body)
+        .bind(\.text, to: viewModel.$title)
+
+    UIButton(type: .system)
+        .title("Submit")
+        .bind(\.isEnabled, to: viewModel.$canSubmit)
+        .sink(\.tapPublisher) { [weak self] in self?.submit() }
+}
+```
+
+它是選用的、獨立的套件。DeclarativeUIKit 不依賴它，它也不依賴 DeclarativeUIKit；兩個套件一起加入即可搭配使用。它的範例 App 把下面的[表單](#表單)畫面重寫了一遍，一個視圖都沒有存成屬性。
 
 ## 範例 App
 

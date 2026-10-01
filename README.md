@@ -6,6 +6,8 @@ A lightweight declarative layout library for UIKit, built on plain `UIView` and 
 
 It introduces no custom rendering layer and no parallel view hierarchy. What you get back is always a real `UIView` or subclass, so it mixes freely with existing UIKit code. See the [example app](#example-app) for screenshots.
 
+Data binding lives in a companion package, [DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine); see [Data binding](#data-binding).
+
 ```swift
 view.addVStack(alignment: .leading, spacing: 4) {
     UILabel()
@@ -17,6 +19,30 @@ view.addVStack(alignment: .leading, spacing: 4) {
         .textColor(.secondaryLabel)
 }
 ```
+
+## Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [`addContent(_:)`](#addcontent_)
+  - [Stacks](#stacks)
+  - [Content closures](#content-closures)
+  - [Property modifiers](#property-modifiers)
+  - [Padding](#padding)
+  - [Frame](#frame)
+  - [Background and overlay](#background-and-overlay)
+  - [Spacer and layout priorities](#spacer-and-layout-priorities)
+  - [Scroll views](#scroll-views)
+- [Data binding](#data-binding)
+- [Example app](#example-app)
+  - [Profile card](#profile-card)
+  - [Form](#form)
+  - [Scrolling](#scrolling)
+- [Roadmap](#roadmap)
+- [Known limitations](#known-limitations)
+- [Development](#development)
+- [License](#license)
 
 ## Requirements
 
@@ -215,7 +241,7 @@ let notes = UITextView()
 
 - `placeholder` exists only on `UITextField`, because `UITextView` has no placeholder in UIKit and the library doesn't add one.
 - A text view's size depends on `isScrollEnabled`. With `false`, it is as tall as its text at the width it is given, and grows as the text grows, like a multiline label. With `true`, UIKit's default, it has no intrinsic height: give it one with `frame` or constraints, and longer text scrolls inside it.
-- Delegates, editing and the keyboard stay UIKit's own. The modifiers set no delegate, and there is no two-way binding, input validation or keyboard avoidance.
+- Delegates, editing and the keyboard stay UIKit's own. The modifiers set no delegate, and there is no two-way binding, input validation or keyboard avoidance. For binding, see [Data binding](#data-binding).
 
 ### Padding
 
@@ -397,6 +423,27 @@ VScroll { rows }
 ```
 
 Keyboard avoidance and reusable lists are out of scope; use `UICollectionView` or `UITableView` for long, reusable content.
+
+## Data binding
+
+DeclarativeUIKit lays views out and stops there: a content closure runs once, and the library has no binding of its own. A view that changes later, or that reports events, has to be kept in a property and wired by hand.
+
+[DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) is the companion package that removes that step. It provides Combine publishers for UIKit controls, scroll views and gestures, and modifiers that bind a view to a publisher in the place where the view is declared:
+
+```swift
+view.addVStack(alignment: .fill, spacing: 12) {
+    UILabel()
+        .font(textStyle: .body)
+        .bind(\.text, to: viewModel.$title)
+
+    UIButton(type: .system)
+        .title("Submit")
+        .bind(\.isEnabled, to: viewModel.$canSubmit)
+        .sink(\.tapPublisher) { [weak self] in self?.submit() }
+}
+```
+
+It is optional and separate. DeclarativeUIKit does not depend on it, and it does not depend on DeclarativeUIKit; add both packages to use them together. Its example app rebuilds the [Form](#form) screen below without keeping a single view in a property.
 
 ## Example app
 

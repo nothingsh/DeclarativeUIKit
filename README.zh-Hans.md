@@ -6,6 +6,8 @@
 
 它不引入自定义渲染层，也不维护平行的视图层级。你拿到的始终是真正的 `UIView` 或其子类，因此可以与现有 UIKit 代码自由混用。截图见[示例应用](#示例应用)。
 
+数据绑定由配套的包 [DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) 提供，见[数据绑定](#数据绑定)。
+
 ```swift
 view.addVStack(alignment: .leading, spacing: 4) {
     UILabel()
@@ -17,6 +19,30 @@ view.addVStack(alignment: .leading, spacing: 4) {
         .textColor(.secondaryLabel)
 }
 ```
+
+## 目录
+
+- [环境要求](#环境要求)
+- [安装](#安装)
+- [用法](#用法)
+  - [`addContent(_:)`](#addcontent_)
+  - [Stack](#stack)
+  - [内容闭包](#内容闭包)
+  - [属性 modifier](#属性-modifier)
+  - [Padding](#padding)
+  - [Frame](#frame)
+  - [Background 与 overlay](#background-与-overlay)
+  - [Spacer 与布局优先级](#spacer-与布局优先级)
+  - [滚动视图](#滚动视图)
+- [数据绑定](#数据绑定)
+- [示例应用](#示例应用)
+  - [个人资料卡片](#个人资料卡片)
+  - [表单](#表单)
+  - [滚动](#滚动)
+- [路线图](#路线图)
+- [已知限制](#已知限制)
+- [开发](#开发)
+- [许可证](#许可证)
 
 ## 环境要求
 
@@ -215,7 +241,7 @@ let notes = UITextView()
 
 - `placeholder` 只存在于 `UITextField` 上，因为 UIKit 中的 `UITextView` 没有占位文字，本库也不会额外添加。
 - 文本视图的尺寸取决于 `isScrollEnabled`。为 `false` 时，它在给定宽度下与文本一样高，并随文本增长而变高，就像多行 label。为 `true`（UIKit 的默认值）时，它没有固有高度：需要通过 `frame` 或约束给它一个高度，较长的文本会在其内部滚动。
-- 代理、编辑行为与键盘仍然是 UIKit 自己的。modifier 不设置代理，也没有双向绑定、输入校验或键盘避让。
+- 代理、编辑行为与键盘仍然是 UIKit 自己的。modifier 不设置代理，也没有双向绑定、输入校验或键盘避让。绑定见[数据绑定](#数据绑定)。
 
 ### Padding
 
@@ -397,6 +423,27 @@ VScroll { rows }
 ```
 
 键盘避让与可复用列表不在本库范围内；长的、需要复用的内容请使用 `UICollectionView` 或 `UITableView`。
+
+## 数据绑定
+
+DeclarativeUIKit 只负责布局：内容闭包只运行一次，库本身不提供绑定。之后需要变化或上报事件的视图，必须存成属性，再手动连接。
+
+[DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) 是配套的包，用来省掉这一步。它为 UIKit 的控件、滚动视图和手势提供 Combine publisher，并提供一组 modifier，让视图在声明它的地方直接绑定到 publisher：
+
+```swift
+view.addVStack(alignment: .fill, spacing: 12) {
+    UILabel()
+        .font(textStyle: .body)
+        .bind(\.text, to: viewModel.$title)
+
+    UIButton(type: .system)
+        .title("Submit")
+        .bind(\.isEnabled, to: viewModel.$canSubmit)
+        .sink(\.tapPublisher) { [weak self] in self?.submit() }
+}
+```
+
+它是可选的、独立的包。DeclarativeUIKit 不依赖它，它也不依赖 DeclarativeUIKit；两个包一起添加即可配合使用。它的示例应用把下面的[表单](#表单)页面重写了一遍，一个视图都没有存成属性。
 
 ## 示例应用
 
