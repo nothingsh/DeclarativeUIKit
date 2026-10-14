@@ -14,4 +14,12 @@ public extension UIImageView {
         self.highlightedImage = value
         return self
     }
+
+    /// Sets the configuration used for symbol images, such as their point size, weight
+    /// and scale.
+    @discardableResult
+    func preferredSymbolConfiguration(_ value: UIImage.SymbolConfiguration?) -> Self {
+        self.preferredSymbolConfiguration = value
+        return self
+    }
 }
