@@ -56,4 +56,18 @@ public extension UILabel {
         self.lineBreakMode = value
         return self
     }
+
+    /// Shrinks the font to fit the width, down to `minimumScaleFactor`. A label with
+    /// `numberOfLines(0)` takes more lines instead and never shrinks.
+    @discardableResult
+    func adjustsFontSizeToFitWidth(_ value: Bool) -> Self {
+        self.adjustsFontSizeToFitWidth = value
+        return self
+    }
+
+    @discardableResult
+    func minimumScaleFactor(_ value: CGFloat) -> Self {
+        self.minimumScaleFactor = value
+        return self
+    }
 }

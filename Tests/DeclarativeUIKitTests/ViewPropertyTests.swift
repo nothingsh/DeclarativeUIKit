@@ -52,6 +52,8 @@ final class ViewPropertyTests: XCTestCase {
             .numberOfLines(3)
             .textAlignment(.center)
             .lineBreakMode(.byTruncatingMiddle)
+            .adjustsFontSizeToFitWidth(true)
+            .minimumScaleFactor(0.5)
 
         XCTAssertEqual(label.font, font)
         XCTAssertFalse(
@@ -62,6 +64,8 @@ final class ViewPropertyTests: XCTestCase {
         XCTAssertEqual(label.numberOfLines, 3)
         XCTAssertEqual(label.textAlignment, .center)
         XCTAssertEqual(label.lineBreakMode, .byTruncatingMiddle)
+        XCTAssertTrue(label.adjustsFontSizeToFitWidth)
+        XCTAssertEqual(label.minimumScaleFactor, 0.5)
 
         label.attributedText(attributed)
         XCTAssertEqual(label.attributedText?.string, "Attributed")
@@ -70,13 +74,16 @@ final class ViewPropertyTests: XCTestCase {
     func testImageViewModifiers() {
         let image = UIImage()
         let highlighted = UIImage()
+        let symbols = UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)
 
         let imageView: UIImageView = UIImageView()
             .image(image)
             .highlightedImage(highlighted)
+            .preferredSymbolConfiguration(symbols)
 
         XCTAssertTrue(imageView.image === image)
         XCTAssertTrue(imageView.highlightedImage === highlighted)
+        XCTAssertEqual(imageView.preferredSymbolConfiguration, symbols)
     }
 
     func testCustomSubclassKeepsItsTypeThroughConfigure() {
