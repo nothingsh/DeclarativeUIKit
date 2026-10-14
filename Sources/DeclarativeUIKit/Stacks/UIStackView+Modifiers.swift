@@ -10,6 +10,20 @@ public extension UIStackView {
         return self
     }
 
+    /// Sets the distance after `view`, in place of `spacing`.
+    ///
+    /// `view` must already be one of this stack's elements. The distance after the last
+    /// element has no effect.
+    @discardableResult
+    func spacing(_ value: CGFloat, after view: UIView) -> Self {
+        precondition(
+            arrangedSubviews.contains(view),
+            "spacing(_:after:) needs a view that is already an element of this stack."
+        )
+        setCustomSpacing(value, after: view)
+        return self
+    }
+
     /// Sets how the elements share the space along the stack's axis.
     @discardableResult
     func distribution(_ value: UIStackView.Distribution) -> Self {
