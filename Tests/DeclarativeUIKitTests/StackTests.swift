@@ -119,4 +119,22 @@ final class StackTests: XCTestCase {
         XCTAssertLessThan(first.frame.width, 320, "The label must be narrower than the stack to detect mirroring.")
         XCTAssertEqual(first.frame.maxX, 320, "Leading is the right edge in a right-to-left layout.")
     }
+
+    func testSpacingAfterAViewReplacesTheSpacingThere() {
+        let first = fixedSizeView(width: 20, height: 10)
+        let second = fixedSizeView(width: 20, height: 10)
+        let third = fixedSizeView(width: 20, height: 10)
+        let stack = VStack(spacing: 4) {
+            first
+            second
+            third
+        }
+        .spacing(20, after: first)
+
+        let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+        host.rootView.addContent(VStack { stack })
+        host.layout()
+        XCTAssertEqual(second.frame.minY - first.frame.maxY, 20)
+        XCTAssertEqual(third.frame.minY - second.frame.maxY, 4, "Other gaps keep spacing.")
+    }
 }

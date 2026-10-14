@@ -54,6 +54,14 @@ public final class VScroll: UIScrollView {
         return self
     }
 
+    /// Sets the distance after `view`, in place of `spacing`. `view` must already be one
+    /// of the elements.
+    @discardableResult
+    public func spacing(_ value: CGFloat, after view: UIView) -> Self {
+        stack.spacing(value, after: view)
+        return self
+    }
+
     /// Sets the same padding on every edge, inside the scrolled content.
     @discardableResult
     public func padding(_ length: CGFloat) -> Self {
