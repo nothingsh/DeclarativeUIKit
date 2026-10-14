@@ -20,6 +20,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- `configure` on a custom view subclass compiles with Swift 6.1 and earlier, where the closure did not receive the subclass type.
 - The remaining spacers in a stack keep sharing the extra space equally after one of them is removed.
 
 ## [0.1.0] - 2026-10-01
