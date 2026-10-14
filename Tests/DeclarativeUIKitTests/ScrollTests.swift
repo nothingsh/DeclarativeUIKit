@@ -118,4 +118,30 @@ final class ScrollTests: XCTestCase {
         XCTAssertEqual(row.contentSize, CGSize(width: 408, height: 40))
         XCTAssertEqual(scroll.contentSize, CGSize(width: 300, height: 140))
     }
+
+    func testEveryPaddingFormAndCustomSpacingReachTheEmbeddedStack() {
+        let first = UIView()
+        let vScroll = VScroll { first }
+
+        vScroll.padding(horizontal: 12, vertical: 4)
+        XCTAssertEqual(
+            vScroll.stack.directionalLayoutMargins,
+            NSDirectionalEdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
+        )
+        vScroll.padding(top: 1, leading: 2, bottom: 3, trailing: 4)
+        XCTAssertEqual(
+            vScroll.stack.directionalLayoutMargins,
+            NSDirectionalEdgeInsets(top: 1, leading: 2, bottom: 3, trailing: 4)
+        )
+        vScroll.padding(.top, 24, others: 8)
+        XCTAssertEqual(
+            vScroll.stack.directionalLayoutMargins,
+            NSDirectionalEdgeInsets(top: 24, leading: 8, bottom: 8, trailing: 8)
+        )
+        vScroll.spacing(10, after: first)
+        XCTAssertEqual(vScroll.stack.customSpacing(after: first), 10)
+
+        let insets = NSDirectionalEdgeInsets(top: 5, leading: 6, bottom: 7, trailing: 8)
+        XCTAssertEqual(HScroll { UIView() }.padding(insets).stack.directionalLayoutMargins, insets)
+    }
 }
