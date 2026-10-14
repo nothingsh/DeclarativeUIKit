@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/declarative-uikit-dark.svg">
+    <img src="docs/images/declarative-uikit-light.svg" alt="DeclarativeUIKit — 以原生 UIView 建構的 UIKit 宣告式版面配置。" width="850">
+  </picture>
+</p>
+
 # DeclarativeUIKit
 
 [English](README.md) | [简体中文](README.zh-Hans.md) | **繁體中文**
