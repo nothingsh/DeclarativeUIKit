@@ -53,6 +53,24 @@ public extension UIView {
     }
 
     @discardableResult
+    func accessibilityHint(_ value: String?) -> Self {
+        self.accessibilityHint = value
+        return self
+    }
+
+    @discardableResult
+    func accessibilityTraits(_ value: UIAccessibilityTraits) -> Self {
+        self.accessibilityTraits = value
+        return self
+    }
+
+    @discardableResult
+    func isAccessibilityElement(_ value: Bool) -> Self {
+        self.isAccessibilityElement = value
+        return self
+    }
+
+    @discardableResult
     func accessibilityIdentifier(_ value: String?) -> Self {
         self.accessibilityIdentifier = value
         return self

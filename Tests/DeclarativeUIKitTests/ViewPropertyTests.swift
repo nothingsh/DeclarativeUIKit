@@ -21,6 +21,9 @@ final class ViewPropertyTests: XCTestCase {
             .tintColor(.green)
             .clipsToBounds(true)
             .accessibilityLabel("Title")
+            .accessibilityHint("Opens the details")
+            .accessibilityTraits(.header)
+            .isAccessibilityElement(false)
             .accessibilityIdentifier("title")
             .text("标题")
 
@@ -32,6 +35,9 @@ final class ViewPropertyTests: XCTestCase {
         XCTAssertEqual(result.tintColor, .green)
         XCTAssertTrue(result.clipsToBounds)
         XCTAssertEqual(result.accessibilityLabel, "Title")
+        XCTAssertEqual(result.accessibilityHint, "Opens the details")
+        XCTAssertEqual(result.accessibilityTraits, .header)
+        XCTAssertFalse(result.isAccessibilityElement)
         XCTAssertEqual(result.accessibilityIdentifier, "title")
         XCTAssertEqual(result.text, "标题")
     }
