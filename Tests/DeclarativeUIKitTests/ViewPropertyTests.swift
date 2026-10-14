@@ -84,4 +84,21 @@ final class ViewPropertyTests: XCTestCase {
         XCTAssertEqual(result.count, 3)
         XCTAssertEqual(result.alpha, 0.5)
     }
+
+    func testLayerModifiers() {
+        let view: UILabel = UILabel()
+            .cornerRadius(12, curve: .continuous)
+            .border(color: .red, width: 2)
+            .shadow(opacity: 0.3, radius: 6, offset: CGSize(width: 0, height: 2))
+
+        XCTAssertEqual(view.layer.cornerRadius, 12)
+        XCTAssertEqual(view.layer.cornerCurve, .continuous)
+        XCTAssertFalse(view.clipsToBounds, "Rounding the corners does not clip.")
+        XCTAssertEqual(view.layer.borderColor, UIColor.red.cgColor)
+        XCTAssertEqual(view.layer.borderWidth, 2)
+        XCTAssertEqual(view.layer.shadowColor, UIColor.black.cgColor)
+        XCTAssertEqual(view.layer.shadowOpacity, 0.3)
+        XCTAssertEqual(view.layer.shadowRadius, 6)
+        XCTAssertEqual(view.layer.shadowOffset, CGSize(width: 0, height: 2))
+    }
 }
