@@ -33,6 +33,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background 與 overlay](#background-與-overlay)
   - [Spacer](#spacer)
   - [捲動視圖](#捲動視圖)
+  - [Xcode 預覽](#xcode-預覽)
 - [資料繫結](#資料繫結)
 - [範例 App](#範例-app)
   - [個人資料卡片](#個人資料卡片)
@@ -53,6 +54,8 @@ dependencies: [
 ```
 
 或在 Xcode 中選擇 File → Add Package Dependencies，輸入 `https://github.com/nothingsh/DeclarativeUIKit`。
+
+各版本的變更請見 [CHANGELOG.md](CHANGELOG.md)。API 參考文件：在 Xcode 中開啟本 package，選擇 Product → Build Documentation。
 
 ## 用法
 
@@ -87,7 +90,7 @@ let column = VStack(alignment: .leading, spacing: 4) {
 
 - `HStack` 與 `VStack` 是 `UIStackView` 的子類別，所有原生 stack API 仍然可用。建構 stack 不會掛載它。
 - `alignment` 是交叉軸上的對齊：`VStack` 可用 `leading`、`center`、`trailing` 或 `fill`；`HStack` 可用 `top`、`center`、`bottom`、`firstTextBaseline`、`lastTextBaseline` 或 `fill`。`fill` 會延展每個元素。
-- `spacing` 預設為 `0`，因此你看到的間距就是你寫下的間距。之後可以用 `.spacing(_:)`、`.alignment(_:)` 與 `.distribution(_:)` 修改。
+- `spacing` 預設為 `0`，因此你看到的間距就是你寫下的間距。之後可以用 `.spacing(_:)`、`.alignment(_:)` 與 `.distribution(_:)` 修改，用 `.spacing(_:after:)` 單獨設定某個元素之後的間距。
 - 內容閉包接受視圖、可選視圖、陣列、`if` / `else`、`switch`、`for` 與 `if #available`。
 
 ### 屬性 modifier
@@ -106,22 +109,31 @@ let play = UIButton(type: .system)
 
 let avatar = UIImageView()
     .image(photo)
-    .configure { $0.layer.cornerRadius = 24 }   // 沒有對應 modifier 的屬性
+    .cornerRadius(24)
+    .clipsToBounds(true)
+    .configure { $0.layer.zPosition = 1 }       // 沒有對應 modifier 的屬性
 ```
 
 | 型別 | Modifier |
 | --- | --- |
-| `UIView` 及其任何子類別 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityIdentifier` |
-| `UILabel` | `text`、`attributedText`、`font`、`font(textStyle:)`、`textColor`、`numberOfLines`、`textAlignment`、`lineBreakMode` |
-| `UIImageView` | `image`、`highlightedImage` |
+| `UIView` 及其任何子類別 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityHint`、`accessibilityTraits`、`isAccessibilityElement`、`accessibilityIdentifier`、`cornerRadius`、`border(color:width:)`、`shadow` |
+| `UILabel` | `text`、`attributedText`、`font`、`font(textStyle:)`、`textColor`、`numberOfLines`、`textAlignment`、`lineBreakMode`、`adjustsFontSizeToFitWidth`、`minimumScaleFactor` |
+| `UIImageView` | `image`、`highlightedImage`、`preferredSymbolConfiguration` |
 | `UIControl` 及其任何子類別 | `isEnabled`、`isSelected`、`isHighlighted` |
 | `UIButton` | `title`、`titleColor`、`image`、`backgroundImage`，皆帶 `for state: UIControl.State = .normal` |
 | `UISwitch` | `isOn`、`onTintColor` |
 | `UISlider` | `value`、`minimumValue`、`maximumValue`、`minimumTrackTintColor`、`maximumTrackTintColor` |
+| `UIStepper` | `value`、`minimumValue`、`maximumValue`、`stepValue` |
+| `UISegmentedControl` | `selectedSegmentIndex`、`selectedSegmentTintColor`、`isMomentary` |
+| `UIPageControl` | `numberOfPages`、`currentPage`、`hidesForSinglePage`、`pageIndicatorTintColor`、`currentPageIndicatorTintColor` |
+| `UIProgressView` | `progress(_:animated:)`、`progressTintColor`、`trackTintColor` |
+| `UIActivityIndicatorView` | `isAnimating`、`hidesWhenStopped`、`color` |
 | `UITextField` | `text`、`attributedText`、`placeholder`、`font`、`font(textStyle:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry` |
 | `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
 
-`font(textStyle:)` 跟隨 Dynamic Type，`font(_:)` 則設定固定字型。按鈕的 modifier 為每個控制項狀態各設定一個值。事件仍使用 UIKit 自己的 target–action 與委派。
+`font(textStyle:)` 跟隨 Dynamic Type，`font(_:)` 則設定固定字型。按鈕的 modifier 為每個控制項狀態各設定一個值。`value`、`selectedSegmentIndex`、`currentPage` 這類設定值的 modifier 不會傳送 `.valueChanged`。事件仍使用 UIKit 自己的 target–action 與委派。
+
+`cornerRadius`、`border` 與 `shadow` 設定視圖的 layer。`cornerRadius` 不會裁切：需要時加上 `clipsToBounds(true)`，但它也會裁掉陰影。layer 接收的是 `CGColor`，因此邊框與陰影顏色只在呼叫時解析一次，之後切換淺色與深色模式時不會跟著改變。
 
 ### Padding 與 frame
 
@@ -191,7 +203,23 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 
 - `HScroll` 與 `VScroll` 是 `UIScrollView` 的子類別，以內建的 stack 排列元素，可透過 `stack` 存取。元素決定 content size；在另一條軸上，內容與捲動視圖一致。
 - 巢狀放在 stack 中時，`HScroll` 的高度由元素決定，但寬度需要由外部給定，`VScroll` 則相反：像上面那樣使用 `.fill` 對齊，或使用 `frame`。
+- `alignment`、`spacing`、`spacing(_:after:)` 以及各種形式的 `padding` 都會轉發給 `stack`；padding 位於捲動內容之內。
 - `contentInsetAdjustmentBehavior` 為 `.never`，因此內容從捲動視圖的邊緣開始。以 `safeArea` 掛載捲動視圖即可讓它保持在安全區域內。
+
+### Xcode 預覽
+
+Xcode 15 以上版本可以直接預覽 UIKit 視圖。UIKit 的 `#Preview` 巨集需要 iOS 17，因此在支援更低版本的 target 中，要為預覽加上 `@available(iOS 17, *)`。只有預覽需要 iOS 17，其餘程式碼的部署目標不變。
+
+```swift
+@available(iOS 17, *)
+#Preview {
+    VStack(alignment: .leading, spacing: 4) {
+        UILabel().text("Ada Lovelace").font(textStyle: .headline)
+        UILabel().text("Mathematician").textColor(.secondaryLabel)
+    }
+    .padding(16)
+}
+```
 
 ## 資料繫結
 
@@ -374,6 +402,8 @@ private func chip(_ text: String) -> UIView {
 ## 已知限制
 
 本 package 宣告的最低版本是 iOS 13，新 API 皆依 iOS 13 的可用性審查過，但從未針對 iOS 13 本身建置或執行過，因為目前的工具鏈已不再支援這個部署目標。目前經過驗證的，是在較新 iOS 版本上的編譯與測試。
+
+`VScroll` 與 `HScroll` 不是惰性的：所有元素都會預先建立並配置版面。它們適合頁面與較短的清單；長清單或數量不定的清單請使用 `UITableView` 或 `UICollectionView`。
 
 ## 開發
 

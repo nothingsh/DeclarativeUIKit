@@ -33,6 +33,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background and overlay](#background-and-overlay)
   - [Spacer](#spacer)
   - [Scroll views](#scroll-views)
+  - [Xcode previews](#xcode-previews)
 - [Data binding](#data-binding)
 - [Example app](#example-app)
   - [Profile card](#profile-card)
@@ -53,6 +54,8 @@ dependencies: [
 ```
 
 Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeUIKit`.
+
+Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md). For the API reference, open the package in Xcode and choose Product → Build Documentation.
 
 ## Usage
 
@@ -87,7 +90,7 @@ let column = VStack(alignment: .leading, spacing: 4) {
 
 - `HStack` and `VStack` are `UIStackView` subclasses, so every native stack API stays available. Constructing one does not mount it.
 - `alignment` is the cross axis: `leading`, `center`, `trailing` or `fill` for a `VStack`; `top`, `center`, `bottom`, `firstTextBaseline`, `lastTextBaseline` or `fill` for an `HStack`. `fill` stretches every element.
-- `spacing` defaults to `0`, so the gaps you see are the ones you write. `.spacing(_:)`, `.alignment(_:)` and `.distribution(_:)` change a stack afterwards.
+- `spacing` defaults to `0`, so the gaps you see are the ones you write. `.spacing(_:)`, `.alignment(_:)` and `.distribution(_:)` change a stack afterwards, and `.spacing(_:after:)` sets a different distance after one element.
 - A content closure accepts views, optional views, arrays, `if` / `else`, `switch`, `for` and `if #available`.
 
 ### Property modifiers
@@ -106,22 +109,31 @@ let play = UIButton(type: .system)
 
 let avatar = UIImageView()
     .image(photo)
-    .configure { $0.layer.cornerRadius = 24 }   // anything without a modifier
+    .cornerRadius(24)
+    .clipsToBounds(true)
+    .configure { $0.layer.zPosition = 1 }       // anything without a modifier
 ```
 
 | Type | Modifiers |
 | --- | --- |
-| `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityIdentifier` |
-| `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode` |
-| `UIImageView` | `image`, `highlightedImage` |
+| `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityHint`, `accessibilityTraits`, `isAccessibilityElement`, `accessibilityIdentifier`, `cornerRadius`, `border(color:width:)`, `shadow` |
+| `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode`, `adjustsFontSizeToFitWidth`, `minimumScaleFactor` |
+| `UIImageView` | `image`, `highlightedImage`, `preferredSymbolConfiguration` |
 | `UIControl` and any subclass | `isEnabled`, `isSelected`, `isHighlighted` |
 | `UIButton` | `title`, `titleColor`, `image`, `backgroundImage`, each with `for state: UIControl.State = .normal` |
 | `UISwitch` | `isOn`, `onTintColor` |
 | `UISlider` | `value`, `minimumValue`, `maximumValue`, `minimumTrackTintColor`, `maximumTrackTintColor` |
+| `UIStepper` | `value`, `minimumValue`, `maximumValue`, `stepValue` |
+| `UISegmentedControl` | `selectedSegmentIndex`, `selectedSegmentTintColor`, `isMomentary` |
+| `UIPageControl` | `numberOfPages`, `currentPage`, `hidesForSinglePage`, `pageIndicatorTintColor`, `currentPageIndicatorTintColor` |
+| `UIProgressView` | `progress(_:animated:)`, `progressTintColor`, `trackTintColor` |
+| `UIActivityIndicatorView` | `isAnimating`, `hidesWhenStopped`, `color` |
 | `UITextField` | `text`, `attributedText`, `placeholder`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry` |
 | `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
 
-`font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. Button modifiers set one value per control state. Events stay UIKit's own target–action and delegates.
+`font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`. Events stay UIKit's own target–action and delegates.
+
+`cornerRadius`, `border` and `shadow` set the view's layer. `cornerRadius` does not clip: add `clipsToBounds(true)`, which also cuts off a shadow. The layer takes a `CGColor`, so a border or shadow color is resolved once and does not follow a later switch between light and dark mode.
 
 ### Padding and frame
 
@@ -191,7 +203,23 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 
 - `HScroll` and `VScroll` are `UIScrollView` subclasses that arrange their elements with an embedded stack, available as `stack`. The elements decide the content size; on the other axis the content matches the scroll view.
 - Nested in a stack, an `HScroll` takes its height from its elements but needs its width from outside, and a `VScroll` the reverse: use `.fill` alignment, as above, or `frame`.
+- `alignment`, `spacing`, `spacing(_:after:)` and every form of `padding` are forwarded to `stack`; the padding lies inside the scrolled content.
 - `contentInsetAdjustmentBehavior` is `.never`, so the content starts at the scroll view's edges. Mount the scroll view with `safeArea` to keep it inside the safe area.
+
+### Xcode previews
+
+Xcode 15 and later preview a UIKit view directly. The `#Preview` macro for UIKit needs iOS 17, so in a target that supports older versions, mark the preview with `@available(iOS 17, *)`. Only the preview needs iOS 17; the rest of the code keeps its deployment target.
+
+```swift
+@available(iOS 17, *)
+#Preview {
+    VStack(alignment: .leading, spacing: 4) {
+        UILabel().text("Ada Lovelace").font(textStyle: .headline)
+        UILabel().text("Mathematician").textColor(.secondaryLabel)
+    }
+    .padding(16)
+}
+```
 
 ## Data binding
 
@@ -374,6 +402,8 @@ The app's deployment target is iOS 15.0, the lowest the current Xcode can build;
 ## Known limitations
 
 The package declares a minimum of iOS 13 and new APIs are reviewed for iOS 13 availability, but nothing has been built or run against iOS 13 itself — current toolchains no longer support that deployment target. What is verified today is compilation and testing on recent iOS versions.
+
+`VScroll` and `HScroll` are not lazy: every element is created and laid out up front. They suit pages and short lists; for long or unbounded lists, use `UITableView` or `UICollectionView`.
 
 ## Development
 
