@@ -22,3 +22,12 @@ jobs:
       # warning fails the build.
       - name: Test
         run: scripts/test-ios.sh SWIFT_STRICT_CONCURRENCY=complete SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+
+      # The package and its tests must also compile in Swift 6 language mode.
+      - name: Build in Swift 6 language mode
+        run: |
+          xcodebuild -scheme DeclarativeUIKit -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,id=$IOS_SIMULATOR_ID" \
+            -derivedDataPath .build/swift6 \
+            SWIFT_VERSION=6 SWIFT_TREAT_WARNINGS_AS_ERRORS=YES \
+            build-for-testing
