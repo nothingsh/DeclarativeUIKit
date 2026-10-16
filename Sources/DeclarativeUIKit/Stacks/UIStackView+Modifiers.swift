@@ -24,6 +24,18 @@ public extension UIStackView {
         return self
     }
 
+    /// Replaces the elements with new content, in declaration order.
+    ///
+    /// The old elements are removed from the view hierarchy, which also drops their custom
+    /// spacing. A view that appears in the new content is arranged again. A background or
+    /// overlay is not an element and stays.
+    @discardableResult
+    func replaceContent(@UIViewBuilder _ content: () -> [UIView]) -> Self {
+        arrangedSubviews.forEach { $0.removeFromSuperview() }
+        arrange(content())
+        return self
+    }
+
     /// Sets how the elements share the space along the stack's axis.
     @discardableResult
     func distribution(_ value: UIStackView.Distribution) -> Self {

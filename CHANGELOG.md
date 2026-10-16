@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows
 
 - `onEvent(_:perform:)` on any `UIControl`, which runs a closure with the control each time one of the given events fires.
 - `onTapGesture(count:perform:)` and `onLongPressGesture(minimumDuration:perform:)` on any view.
+- `replaceContent` on stacks, `HScroll` and `VScroll`, which replaces the elements with new builder content.
 
 ## [0.3.0] - 2026-10-16
 

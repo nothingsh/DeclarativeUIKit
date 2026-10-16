@@ -62,6 +62,14 @@ public final class HScroll: UIScrollView {
         return self
     }
 
+    /// Replaces the elements with new content. The old elements are removed from the view
+    /// hierarchy.
+    @discardableResult
+    public func replaceContent(@UIViewBuilder _ content: () -> [UIView]) -> Self {
+        stack.replaceContent(content)
+        return self
+    }
+
     /// Sets the same padding on every edge, inside the scrolled content.
     @discardableResult
     public func padding(_ length: CGFloat) -> Self {

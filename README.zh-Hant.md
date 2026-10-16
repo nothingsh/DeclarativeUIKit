@@ -102,6 +102,7 @@ let column = VStack(alignment: .leading, spacing: 4) {
 - `alignment` 是交叉軸上的對齊：`VStack` 可用 `leading`、`center`、`trailing` 或 `fill`；`HStack` 可用 `top`、`center`、`bottom`、`firstTextBaseline`、`lastTextBaseline` 或 `fill`。`fill` 會延展每個元素。
 - `spacing` 預設為 `0`，因此你看到的間距就是你寫下的間距。之後可以用 `.spacing(_:)`、`.alignment(_:)` 與 `.distribution(_:)` 修改，用 `.spacing(_:after:)` 單獨設定某個元素之後的間距。
 - 內容閉包接受視圖、可選視圖、陣列、`if` / `else`、`switch`、`for` 與 `if #available`。
+- 內容閉包只執行一次。之後要顯示別的元素，持有這個 stack 並呼叫 `replaceContent { … }`：舊元素會移出視圖階層，background 與 overlay 保留。
 
 ### 屬性 modifier
 
@@ -237,7 +238,7 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 
 - `HScroll` 與 `VScroll` 是 `UIScrollView` 的子類別，以內建的 stack 排列元素，可透過 `stack` 存取。元素決定 content size；在另一條軸上，內容與捲動視圖一致。
 - 巢狀放在 stack 中時，`HScroll` 的高度由元素決定，但寬度需要由外部給定，`VScroll` 則相反：像上面那樣使用 `.fill` 對齊，或使用 `frame`。
-- `alignment`、`spacing`、`spacing(_:after:)` 以及各種形式的 `padding` 都會轉發給 `stack`；padding 位於捲動內容之內。
+- `alignment`、`spacing`、`spacing(_:after:)`、`replaceContent` 以及各種形式的 `padding` 都會轉發給 `stack`；padding 位於捲動內容之內。
 - `contentInsetAdjustmentBehavior` 為 `.never`，因此內容從捲動視圖的邊緣開始。以 `safeArea` 掛載捲動視圖即可讓它保持在安全區域內。
 
 ### 清單

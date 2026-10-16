@@ -64,6 +64,17 @@ final class ScrollTests: XCTestCase {
         XCTAssertEqual(scroll.contentSize, CGSize(width: 300, height: 82))
     }
 
+    func testReplaceContentUpdatesTheScrollingLength() {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 200))
+        let scroll = host.rootView.addVScroll { fixedSizeView(width: 10, height: 600) }
+        host.layout()
+
+        scroll.replaceContent { fixedSizeView(width: 10, height: 900) }
+        host.layout()
+        XCTAssertEqual(scroll.stack.arrangedSubviews.count, 1)
+        XCTAssertEqual(scroll.contentSize.height, 900)
+    }
+
     func testWrappingTextUpdatesTheScrollingLength() {
         let host = LayoutTestHost(size: CGSize(width: 300, height: 200))
         let text = UILabel().text(String(repeating: "Text ", count: 20)).numberOfLines(0)
