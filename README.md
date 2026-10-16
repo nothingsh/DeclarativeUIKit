@@ -67,7 +67,7 @@ dependencies: [
 
 Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeUIKit`.
 
-Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md). Versions follow [Semantic Versioning](https://semver.org/). From 1.0, minor versions only add API, a renamed API stays available as deprecated until the next major version, and the minimum iOS version rises only with a major version. Before 1.0, a minor version may change the API; the changelog then shows how to migrate. For the API reference, open the package in Xcode and choose Product → Build Documentation.
+Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md). Versions follow [Semantic Versioning](https://semver.org/). From 1.0, minor versions only add API, a renamed API stays available as deprecated until the next major version, and the minimum iOS version rises only with a major version. Before 1.0, a minor version may change the API; the changelog then shows how to migrate. For the API reference, open the package in Xcode and choose Product → Build Documentation; it also has a guide to building reusable components.
 
 ## Usage
 
@@ -599,7 +599,7 @@ private func chip(_ text: String) -> UIView {
     .background {
         UIView()
             .background(UIColor.systemBlue.withAlphaComponent(0.12))
-            .configure { $0.layer.cornerRadius = 8 }
+            .cornerRadius(8)
     }
 }
 ```
