@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows
 
 - `lineHeight(_:)` and `kerning(_:)` on `UILabel`, kept across the label's `text`, `attributedText` and `font` modifiers.
 - `font(_:relativeTo:)` on `UILabel`, `UITextField` and `UITextView`, which makes a custom font follow Dynamic Type.
+- Modifiers for buttons created with `UIButton(configuration:)`: `buttonSize`, `cornerStyle`, `contentInsets`, `baseForegroundColor`, `baseBackgroundColor`, `subtitle`, `titleAlignment`, `titlePadding`, `titleFont`, `imagePlacement`, `imagePadding`, `preferredSymbolConfigurationForImage` and `showsActivityIndicator`.
 
 ## [0.4.0] - 2026-10-16
 

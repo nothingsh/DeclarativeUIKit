@@ -125,6 +125,13 @@ let play = UIButton(type: .system)
     .title("Play")
     .title("Pause", for: .selected)
 
+let save = UIButton(configuration: .filled())
+    .title("Save")
+    .image(UIImage(systemName: "checkmark"))
+    .imagePadding(8)
+    .cornerStyle(.capsule)
+    .titleFont(textStyle: .headline)            // follows Dynamic Type
+
 let avatar = UIImageView()
     .image(photo)
     .cornerRadius(24)
@@ -139,6 +146,7 @@ let avatar = UIImageView()
 | `UIImageView` | `image`, `highlightedImage`, `preferredSymbolConfiguration` |
 | `UIControl` and any subclass | `isEnabled`, `isSelected`, `isHighlighted` |
 | `UIButton` | `title`, `titleColor`, `image`, `backgroundImage`, each with `for state: UIControl.State = .normal` |
+| `UIButton` with a configuration | `buttonSize`, `cornerStyle`, `contentInsets`, `baseForegroundColor`, `baseBackgroundColor`, `subtitle`, `titleAlignment`, `titlePadding`, `titleFont`, `titleFont(_:relativeTo:)`, `titleFont(textStyle:)`, `imagePlacement`, `imagePadding`, `preferredSymbolConfigurationForImage`, `showsActivityIndicator` |
 | `UISwitch` | `isOn`, `onTintColor` |
 | `UISlider` | `value`, `minimumValue`, `maximumValue`, `minimumTrackTintColor`, `maximumTrackTintColor` |
 | `UIStepper` | `value`, `minimumValue`, `maximumValue`, `stepValue` |
@@ -150,6 +158,8 @@ let avatar = UIImageView()
 | `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
 
 `font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. `font(_:relativeTo:)` makes a custom font follow Dynamic Type the way the system font for the text style does; give the size it should have at the default text size. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`.
+
+The modifiers for a button with a configuration change its `UIButton.Configuration`, so create the button with `UIButton(configuration:)`; on a button without one they stop with a precondition failure. `title` and `image` work on both kinds of button, per state. On a button with a configuration, color the text with `baseForegroundColor` instead of `titleColor`, and set the background through the configuration's `background` instead of `backgroundImage`. `titleFont` replaces the configuration's `titleTextAttributesTransformer`; the `relativeTo:` and `textStyle:` forms follow Dynamic Type.
 
 `lineHeight` sets the height of each line, as in a design tool, and `kerning` the space after each character. `UILabel` has no property for either, so the label keeps them and writes them into `attributedText`. The `text`, `attributedText` and `font` modifiers apply them again; assigning `label.text = …` directly does not, so update the text with `label.text(…)`. Text sits at the bottom of each line, as UIKit draws it, not centered as in a design tool. The line height is relative to the font, so it grows with Dynamic Type.
 
