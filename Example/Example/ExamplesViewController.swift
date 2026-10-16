@@ -23,6 +23,11 @@ final class ExamplesViewController: UIViewController {
                 detail: "HScroll rows inside a VScroll, and rows appended at runtime.",
                 action: #selector(showScroll)
             )
+            entry(
+                "List",
+                detail: "A grouped VList with reusable rows, updated by passing new data.",
+                action: #selector(showList)
+            )
         }
     }
 
@@ -56,5 +61,9 @@ final class ExamplesViewController: UIViewController {
 
     @objc private func showScroll() {
         navigationController?.pushViewController(ScrollExampleViewController(), animated: true)
+    }
+
+    @objc private func showList() {
+        navigationController?.pushViewController(ListExampleViewController(), animated: true)
     }
 }
