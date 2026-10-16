@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-16
+
 ### Added
 
 - `onEvent(_:perform:)` on any `UIControl`, which runs a closure with the control each time one of the given events fires.
@@ -46,7 +48,8 @@ All notable changes to this project are documented here. The format follows
 
 First release.
 
-[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/nothingsh/DeclarativeUIKit/releases/tag/0.1.0
