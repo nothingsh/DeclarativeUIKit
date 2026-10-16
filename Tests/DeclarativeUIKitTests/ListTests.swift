@@ -177,4 +177,79 @@ final class ListTests: XCTestCase {
         XCTAssertEqual(selected, [1])
         XCTAssertEqual(list.indexPathsForSelectedItems, [])
     }
+
+    func testStandardRowsSwitchWithReusableRowsInTheSameCell() {
+        let list = VList([Entry(id: 1, text: "a")], id: \.id) { entry in
+            entry.kind == 0
+                ? ListRow(text: entry.text, secondaryText: "detail")
+                : ListRow(TextRow.self) { $0.label.text = entry.text }
+        }
+        mount(list)
+        let standard = cells(list)[0].contentConfiguration as? UIListContentConfiguration
+        XCTAssertEqual(standard?.text, "a")
+        XCTAssertEqual(standard?.secondaryText, "detail")
+
+        for (kind, text) in [(1, "b"), (0, "c"), (1, "d")] {
+            list.update([Entry(id: 1, text: text, kind: kind)], animated: false)
+            let cell = cells(list)[0]
+            if kind == 0 {
+                XCTAssertEqual((cell.contentConfiguration as? UIListContentConfiguration)?.text, text)
+            } else {
+                XCTAssertNil(cell.contentConfiguration)
+                XCTAssertEqual((cell.content as? TextRow)?.label.text, text)
+                XCTAssertTrue(cell.content?.isDescendant(of: cell.contentView) == true)
+            }
+        }
+    }
+
+    func testSwipeActionsBelongToTheirRow() {
+        let list = VList([Entry(id: 1, text: "a"), Entry(id: 2, text: "b")], id: \.id) { entry in
+            let row = ListRow(text: entry.text)
+            guard entry.id == 1 else { return row }
+            return row.trailingSwipeActions(
+                [UIContextualAction(style: .destructive, title: "Delete") { _, _, done in done(true) }],
+                allowsFullSwipe: false
+            )
+        }
+        mount(list)
+        let rows = cells(list)
+
+        XCTAssertEqual(rows[0].trailingSwipeActions?.actions.map(\.title), ["Delete"])
+        XCTAssertEqual(rows[0].trailingSwipeActions?.performsFirstActionWithFullSwipe, false)
+        XCTAssertNil(rows[0].leadingSwipeActions)
+        XCTAssertNil(rows[1].trailingSwipeActions)
+    }
+
+    func testScrollToAndReachingTheEnd() {
+        var reachedEnd = 0
+        let list = textList((1...100).map { Entry(id: $0, text: "\($0)") }).onReachEnd { reachedEnd += 1 }
+        mount(list)
+        XCTAssertEqual(reachedEnd, 0)
+
+        list.scrollTo(50, at: .top, animated: false)
+        list.layoutIfNeeded()
+        let row = list.cellForItem(at: IndexPath(item: 49, section: 0))
+        XCTAssertEqual(row?.frame.minY ?? -1, list.contentOffset.y, accuracy: 0.5)
+        XCTAssertEqual(reachedEnd, 0)
+
+        list.scrollTo(100, animated: false)
+        list.layoutIfNeeded()
+        XCTAssertEqual(reachedEnd, 1)
+    }
+
+    func testEmptyViewShowsOnlyWithoutRows() throws {
+        let message = UILabel().text("No entries")
+        let list = textList([]).emptyView(message, offset: CGPoint(x: 10, y: -40))
+        mount(list)
+        let background = try XCTUnwrap(list.backgroundView)
+        XCTAssertFalse(background.isHidden)
+        let center = message.convert(CGPoint(x: message.bounds.midX, y: message.bounds.midY), to: list)
+        XCTAssertEqual(center.x, list.bounds.midX + 10, accuracy: 0.5)
+        XCTAssertEqual(center.y, list.bounds.midY - 40, accuracy: 0.5)
+
+        list.update([Entry(id: 1, text: "a")])
+        XCTAssertTrue(background.isHidden)
+        list.update([Entry]())
+        XCTAssertFalse(background.isHidden)
+    }
 }

@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `ListRow(text:secondaryText:image:)` and `ListRow(content:)`, rows in UIKit's standard style.
+- `leadingSwipeActions` and `trailingSwipeActions` on `ListRow`.
+- `onReachEnd`, `scrollTo(_:at:animated:)` and `emptyView(_:offset:)` on `VList`.
+- `onRefresh`, `isPagingEnabled` and `keyboardDismissMode` on any `UIScrollView`.
+
 ## [0.6.0] - 2026-10-16
 
 ### Added

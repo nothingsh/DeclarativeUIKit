@@ -262,6 +262,7 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 - Nested in a stack, an `HScroll` takes its height from its elements but needs its width from outside, and a `VScroll` the reverse: use `.fill` alignment, as above, or `frame`.
 - `alignment`, `spacing`, `spacing(_:after:)`, `replaceContent` and every form of `padding` are forwarded to `stack`; the padding lies inside the scrolled content.
 - `contentInsetAdjustmentBehavior` is `.never`, so the content starts at the scroll view's edges. Mount the scroll view with `safeArea` to keep it inside the safe area.
+- `isPagingEnabled` and `keyboardDismissMode` set those properties. `onRefresh { await … }` adds pull to refresh: the refresh control spins until the closure returns. Another call replaces the action.
 - Short content keeps its own length, so a `Spacer` along the scrolling axis has no room to take. `fillsViewport(true)` makes the content at least as tall as a `VScroll`, or as wide as an `HScroll`; a `Spacer` then takes the extra length, which keeps a button at the bottom of a short form, while longer content still scrolls:
 
 ```swift
@@ -357,6 +358,32 @@ let settings = VList(
 - The list is its own `delegate`, for selection. Replacing the delegate stops `onSelect`.
 - The list keeps the row closure, and each cell keeps its `onSelect` action. Capture a view controller with `[weak self]`, or it and the list keep each other alive.
 - With [DeclarativeCombine](#data-binding), `onReceive` feeds a publisher into `update`: `list.onReceive(viewModel.$orders) { $0.update($1) }`.
+
+Rows in UIKit's standard style, swipe actions, loading more and an empty state:
+
+```swift
+let list = VList(orders, id: \.id) { [weak self] order in
+    ListRow(text: order.title, secondaryText: order.date, image: UIImage(systemName: "bag"))
+        .trailingSwipeActions([
+            UIContextualAction(style: .destructive, title: "Delete") { _, _, done in
+                self?.delete(order)
+                done(true)
+            }
+        ])
+}
+.emptyView(UILabel().text("No orders").textColor(.secondaryLabel))
+.onReachEnd { [weak self] in self?.loadNextPage() }
+.onRefresh { [weak self] in await self?.reload() }
+
+list.scrollTo(order.id)
+```
+
+- `ListRow(text:secondaryText:image:)` is a row in UIKit's standard style, laid out by the cell's default content configuration for the list's appearance, with the separator lined up with the text. `ListRow(content:)` takes any `UIListContentConfiguration`, such as `.valueCell()` for text on both sides.
+- `leadingSwipeActions` and `trailingSwipeActions` take UIKit's `UIContextualAction`s, and each handler must call its completion handler. With `allowsFullSwipe`, on by default, a full swipe runs the first action. `listConfiguration` cannot change the swipe actions.
+- `onReachEnd` runs when the last row is about to be shown. That includes a new last row after an update and the last row scrolled back into view, so ignore calls while a page is loading.
+- `scrollTo` scrolls to the row with an id, only as far as needed unless you pass a position such as `.top`. The id must be in the list.
+- `emptyView` is shown in the middle of the list while it has no rows, even if it has section headers. `offset` moves it from the middle, with x positive toward the right and y toward the bottom, as for `overlay`. It is kept in `backgroundView`.
+- `onRefresh` works on any scroll view; see [Scroll views](#scroll-views).
 
 ### Xcode previews
 
@@ -548,7 +575,7 @@ private func chip(_ text: String) -> UIView {
 
 ### List
 
-An `.insetGrouped` `VList` with a header and footer. `MessageRow` and `SwitchRow` are reusable rows; the version row is rebuilt each time. *Add* and tapping a message change the data and call `update`, which inserts the new row with animation, refreshes the changed row and the unread count in the header.
+An `.insetGrouped` `VList` with a header and footer. `MessageRow` and `SwitchRow` are reusable rows; the storage row is a standard row and the version row is rebuilt each time. *Add*, tapping a message, swiping it to delete it and pulling to refresh change the data and call `update`, which inserts the new row with animation, refreshes the changed row and the unread count in the header.
 
 <table>
 <tr>
@@ -560,11 +587,23 @@ VList(sections: sections(), id: \.id, appearance: .insetGrouped) { [weak self] r
     case .message(let message):
         return ListRow(MessageRow.self) { $0.update(message) }
             .onSelect { self?.toggleRead(message.id) }
+            .trailingSwipeActions([
+                UIContextualAction(style: .destructive, title: "Delete") { _, _, done in
+                    self?.deleteMessage(message.id)
+                    done(true)
+                }
+            ])
     case .notifications:
         return ListRow(SwitchRow.self) {
             $0.update(title: "Notifications", isOn: self?.notifications ?? false)
             $0.onChange = { self?.notifications = $0 }
         }
+    case .storage:
+        var content = UIListContentConfiguration.valueCell()
+        content.text = "Storage"
+        content.secondaryText = "1.2 GB"
+        content.image = UIImage(systemName: "internaldrive")
+        return ListRow(content: content)
     case .version:
         return ListRow {
             HStack(spacing: 8) {

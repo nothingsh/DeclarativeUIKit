@@ -262,6 +262,7 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 - 嵌套在 stack 中时，`HScroll` 的高度由元素决定，但宽度需要由外部给出，`VScroll` 则相反：像上面那样使用 `.fill` 对齐，或使用 `frame`。
 - `alignment`、`spacing`、`spacing(_:after:)`、`replaceContent` 以及各种形式的 `padding` 都会转发给 `stack`；padding 位于滚动内容之内。
 - `contentInsetAdjustmentBehavior` 为 `.never`，因此内容从滚动视图的边缘开始。用 `safeArea` 挂载滚动视图可以让它保持在安全区内。
+- `isPagingEnabled` 和 `keyboardDismissMode` 设置对应的属性。`onRefresh { await … }` 添加下拉刷新：刷新控件一直转动，直到闭包返回。再次调用会替换之前的操作。
 - 内容较短时保持自身长度，因此沿滚动方向的 `Spacer` 没有空间可占。`fillsViewport(true)` 让内容至少与 `VScroll` 一样高，或与 `HScroll` 一样宽；多出的长度由 `Spacer` 占据，可以把按钮留在短表单的底部，内容更长时照常滚动：
 
 ```swift
@@ -357,6 +358,32 @@ let settings = VList(
 - 列表自己担任 `delegate` 来处理选中。替换 delegate 会让 `onSelect` 失效。
 - 列表持有 row 闭包，每个 cell 持有自己的 `onSelect` 闭包。捕获 view controller 时写 `[weak self]`，否则它与列表会互相持有。
 - 配合 [DeclarativeCombine](#数据绑定) 时，用 `onReceive` 把 publisher 接到 `update`：`list.onReceive(viewModel.$orders) { $0.update($1) }`。
+
+标准样式的行、侧滑操作、加载更多和空状态：
+
+```swift
+let list = VList(orders, id: \.id) { [weak self] order in
+    ListRow(text: order.title, secondaryText: order.date, image: UIImage(systemName: "bag"))
+        .trailingSwipeActions([
+            UIContextualAction(style: .destructive, title: "Delete") { _, _, done in
+                self?.delete(order)
+                done(true)
+            }
+        ])
+}
+.emptyView(UILabel().text("No orders").textColor(.secondaryLabel))
+.onReachEnd { [weak self] in self?.loadNextPage() }
+.onRefresh { [weak self] in await self?.reload() }
+
+list.scrollTo(order.id)
+```
+
+- `ListRow(text:secondaryText:image:)` 是 UIKit 标准样式的行，由 cell 按列表外观的默认 content configuration 排版，分割线与文字对齐。`ListRow(content:)` 接受任意 `UIListContentConfiguration`，例如两侧都有文字的 `.valueCell()`。
+- `leadingSwipeActions` 和 `trailingSwipeActions` 接受 UIKit 的 `UIContextualAction`，每个 handler 都必须调用它的 completion handler。`allowsFullSwipe` 默认开启，完整滑动会执行第一个操作。`listConfiguration` 不能修改侧滑操作。
+- `onReachEnd` 在最后一行即将显示时运行。更新后出现的新最后一行、以及滚回视野的最后一行都会触发，所以正在加载时请忽略这些调用。
+- `scrollTo` 按 id 滚动到某一行，默认只滚到刚好可见，也可以传入 `.top` 等位置。id 必须在列表中。
+- `emptyView` 在列表没有任何行时显示在列表中央，即使有 section 标题也是如此。`offset` 让它偏离中央，x 向右为正、y 向下为正，与 `overlay` 相同。它保存在 `backgroundView` 中。
+- `onRefresh` 适用于任何滚动视图，见[滚动视图](#滚动视图)。
 
 ### Xcode 预览
 
@@ -548,7 +575,7 @@ private func chip(_ text: String) -> UIView {
 
 ### 分组列表
 
-带标题和脚注的 `.insetGrouped` `VList`。`MessageRow` 和 `SwitchRow` 是可复用行；版本号一行每次重建。点 *Add* 或点击消息会修改数据并调用 `update`：新行带动画插入，变化的行和标题里的未读数随之刷新。
+带标题和脚注的 `.insetGrouped` `VList`。`MessageRow` 和 `SwitchRow` 是可复用行；存储空间一行是标准行，版本号一行每次重建。点 *Add*、点击消息、侧滑删除和下拉刷新都会修改数据并调用 `update`：新行带动画插入，变化的行和标题里的未读数随之刷新。
 
 <table>
 <tr>
@@ -560,11 +587,23 @@ VList(sections: sections(), id: \.id, appearance: .insetGrouped) { [weak self] r
     case .message(let message):
         return ListRow(MessageRow.self) { $0.update(message) }
             .onSelect { self?.toggleRead(message.id) }
+            .trailingSwipeActions([
+                UIContextualAction(style: .destructive, title: "Delete") { _, _, done in
+                    self?.deleteMessage(message.id)
+                    done(true)
+                }
+            ])
     case .notifications:
         return ListRow(SwitchRow.self) {
             $0.update(title: "Notifications", isOn: self?.notifications ?? false)
             $0.onChange = { self?.notifications = $0 }
         }
+    case .storage:
+        var content = UIListContentConfiguration.valueCell()
+        content.text = "Storage"
+        content.secondaryText = "1.2 GB"
+        content.image = UIImage(systemName: "internaldrive")
+        return ListRow(content: content)
     case .version:
         return ListRow {
             HStack(spacing: 8) {

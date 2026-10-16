@@ -91,6 +91,12 @@ public final class VList<Item>: UICollectionView {
         let layout = UICollectionViewCompositionalLayout { index, environment in
             var configuration = UICollectionLayoutListConfiguration(appearance: appearance)
             state.configure(&configuration)
+            configuration.leadingSwipeActionsConfigurationProvider = { [unowned state] indexPath in
+                state.cell(at: indexPath)?.leadingSwipeActions
+            }
+            configuration.trailingSwipeActionsConfigurationProvider = { [unowned state] indexPath in
+                state.cell(at: indexPath)?.trailingSwipeActions
+            }
             configuration.headerMode = state.headers[index] == nil ? .none : .supplementary
             configuration.footerMode = state.footers[index] == nil ? .none : .supplementary
             return .list(using: configuration, layoutEnvironment: environment)
@@ -98,6 +104,7 @@ public final class VList<Item>: UICollectionView {
         super.init(frame: .zero, collectionViewLayout: layout)
         contentInsetAdjustmentBehavior = .never
         delegate = listDelegate
+        state.list = self
 
         let cell = UICollectionView.CellRegistration<RowCell, ListID> { [unowned self] cell, _, id in
             cell.apply(self.row(self.items[id]!))
@@ -161,6 +168,7 @@ public final class VList<Item>: UICollectionView {
         self.sections.headers = sections.map(\.header)
         self.sections.footers = sections.map(\.footer)
         diffable.apply(snapshot, animatingDifferences: animated)
+        backgroundView?.isHidden = !items.isEmpty
 
         for (kind, titles) in [
             (UICollectionView.elementKindSectionHeader, self.sections.headers),
@@ -174,9 +182,58 @@ public final class VList<Item>: UICollectionView {
         }
     }
 
+    /// Runs `action` when the last row is about to be shown, to load more items. It runs
+    /// again each time the last row comes into view, including a new last row after an
+    /// update, so ignore calls while a load is in progress. Replaces an earlier action.
+    @discardableResult
+    public func onReachEnd(_ action: @escaping () -> Void) -> Self {
+        listDelegate.onReachEnd = action
+        return self
+    }
+
+    /// Scrolls to the row with `id`, which must be in the list. By default the list
+    /// scrolls only as far as needed to show the row.
+    public func scrollTo<ID: Hashable & Sendable>(
+        _ id: ID,
+        at position: UICollectionView.ScrollPosition = [],
+        animated: Bool = true
+    ) {
+        guard let indexPath = diffable.indexPath(for: ListID(id)) else {
+            preconditionFailure("VList has no row with id \(id).")
+        }
+        scrollToItem(at: indexPath, at: position, animated: animated)
+    }
+
+    /// Shows `view` in the middle of the list while the list has no rows, even if it has
+    /// section headers or footers. `nil` removes it. The view is kept in `backgroundView`.
+    ///
+    /// `offset` moves the view from the middle: x is positive toward the right and y
+    /// toward the bottom. The view stays within the layout margins, which win over a
+    /// horizontal offset.
+    @discardableResult
+    public func emptyView(_ view: UIView?, offset: CGPoint = .zero) -> Self {
+        backgroundView = view.map { view in
+            let container = UIView()
+            container.addSubview(view)
+            view.translatesAutoresizingMaskIntoConstraints = false
+            let centerX = view.centerXAnchor.constraint(equalTo: container.centerXAnchor, constant: offset.x)
+            centerX.priority = .required - 1
+            NSLayoutConstraint.activate([
+                centerX,
+                view.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: offset.y),
+                view.leadingAnchor.constraint(greaterThanOrEqualTo: container.layoutMarginsGuide.leadingAnchor),
+                view.trailingAnchor.constraint(lessThanOrEqualTo: container.layoutMarginsGuide.trailingAnchor)
+            ])
+            container.isHidden = !items.isEmpty
+            return container
+        }
+        return self
+    }
+
     /// Adjusts the list configuration of every section, such as `separatorConfiguration`
     /// or `backgroundColor`. Replaces the body of an earlier call. The list sets
-    /// `headerMode` and `footerMode` after `body` runs, so `body` cannot change them.
+    /// `headerMode`, `footerMode` and the swipe action providers after `body` runs, so
+    /// `body` cannot change them.
     @discardableResult
     public func listConfiguration(
         _ body: @escaping (inout UICollectionLayoutListConfiguration) -> Void
@@ -196,9 +253,15 @@ public final class VList<Item>: UICollectionView {
 /// What the layout and the supplementary views read for each section. A reference type,
 /// because the layout is created before the list exists.
 private final class SectionState {
+    weak var list: UICollectionView?
     var headers: [String?] = []
     var footers: [String?] = []
     var configure: (inout UICollectionLayoutListConfiguration) -> Void = { _ in }
+
+    /// The cell shown at `indexPath`, whose swipe actions the layout reads.
+    @MainActor func cell(at indexPath: IndexPath) -> RowCell? {
+        list?.cellForItem(at: indexPath) as? RowCell
+    }
 }
 
 /// A cell that keeps a reusable row's content across items of the same row type.
@@ -206,12 +269,22 @@ final class RowCell: UICollectionViewListCell {
     private(set) var content: UIView?
     private var contentType: ObjectIdentifier?
     private(set) var onSelect: (() -> Void)?
+    private(set) var leadingSwipeActions: UISwipeActionsConfiguration?
+    private(set) var trailingSwipeActions: UISwipeActionsConfiguration?
 
     func apply(_ row: ListRow) {
-        if let content, let type = row.contentType, type == contentType {
+        if let standardContent = row.standardContent {
+            content = nil
+            contentType = nil
+            contentConfiguration = standardContent(self)
+        } else if let content, let type = row.contentType, type == contentType {
             row.update(content)
         } else {
             content?.removeFromSuperview()
+            // Standard content replaced the content view; nil brings back an empty one.
+            if contentConfiguration != nil {
+                contentConfiguration = nil
+            }
             let made = row.make()
             contentView.addContent(made)
             row.update(made)
@@ -220,11 +293,28 @@ final class RowCell: UICollectionViewListCell {
         }
         accessories = row.accessories
         onSelect = row.onSelect
+        leadingSwipeActions = row.leadingSwipeActions
+        trailingSwipeActions = row.trailingSwipeActions
     }
 }
 
-/// Highlights and selects only rows that have an `onSelect` action.
+/// Highlights and selects only rows that have an `onSelect` action, and reports when the
+/// last row is about to be shown.
 private final class ListDelegate: NSObject, UICollectionViewDelegate {
+    var onReachEnd: (() -> Void)?
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        willDisplay cell: UICollectionViewCell,
+        forItemAt indexPath: IndexPath
+    ) {
+        let lastSection = collectionView.numberOfSections - 1
+        if indexPath.section == lastSection,
+           indexPath.item == collectionView.numberOfItems(inSection: lastSection) - 1 {
+            onReachEnd?()
+        }
+    }
+
     func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         (collectionView.cellForItem(at: indexPath) as? RowCell)?.onSelect != nil
     }
