@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `onEvent(_:perform:)` on any `UIControl`, which runs a closure with the control each time one of the given events fires.
+- `onTapGesture(count:perform:)` and `onLongPressGesture(minimumDuration:perform:)` on any view.
+
 ## [0.3.0] - 2026-10-16
 
 ### Added

@@ -36,6 +36,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [挂载](#挂载)
   - [Stack](#stack)
   - [属性 modifier](#属性-modifier)
+  - [事件](#事件)
   - [Padding 与 frame](#padding-与-frame)
   - [Background 与 overlay](#background-与-overlay)
   - [Spacer](#spacer)
@@ -140,9 +141,33 @@ let avatar = UIImageView()
 | `UITextField` | `text`、`attributedText`、`placeholder`、`font`、`font(textStyle:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry` |
 | `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
 
-`font(textStyle:)` 跟随 Dynamic Type，`font(_:)` 则设置固定字体。按钮的 modifier 为每个控件状态各设置一个值。`value`、`selectedSegmentIndex`、`currentPage` 这类设置值的 modifier 不会发送 `.valueChanged`。事件仍使用 UIKit 自己的 target–action 与代理。
+`font(textStyle:)` 跟随 Dynamic Type，`font(_:)` 则设置固定字体。按钮的 modifier 为每个控件状态各设置一个值。`value`、`selectedSegmentIndex`、`currentPage` 这类设置值的 modifier 不会发送 `.valueChanged`。
 
 `cornerRadius`、`border` 与 `shadow` 设置视图的 layer。`cornerRadius` 不会裁剪：需要时加上 `clipsToBounds(true)`，但它也会裁掉阴影。layer 接收的是 `CGColor`，因此边框和阴影颜色只在调用时解析一次，之后切换浅色与深色模式时不会跟着变化。
+
+### 事件
+
+`onEvent` 在控件每次发送指定的 `UIControl.Event` 时运行闭包。闭包收到的是控件本身，类型不变，因此不用把控件存成属性，也能读取 `isOn`、`value` 或 `text`。`onTapGesture` 与 `onLongPressGesture` 适用于任何视图。
+
+```swift
+UISwitch()
+    .onEvent(.valueChanged) { [weak self] toggle in
+        self?.settings.isEnabled = toggle.isOn
+    }
+
+UIButton(type: .system)
+    .title("Save")
+    .onEvent(.primaryActionTriggered) { [weak self] _ in self?.save() }
+
+UIImageView(image: avatar)
+    .onTapGesture { [weak self] in self?.showProfile() }
+    .onLongPressGesture { [weak self] in self?.showMenu() }
+```
+
+- 两个手势 modifier 各添加一个手势识别器，并打开 `isUserInteractionEnabled`；`UILabel` 和 `UIImageView` 默认是关闭的。`onTapGesture(count:perform:)` 默认点击一次。`onLongPressGesture(minimumDuration:perform:)` 在按压持续 `minimumDuration`（默认 0.5 秒）时运行一次闭包。
+- 每次调用都会再添加一个 action 或识别器，之前的仍然保留。要停止响应，用 `isEnabled` 或 `isUserInteractionEnabled` 关闭控件或视图。
+- 控件持有它的闭包，视图持有它的识别器及其闭包。捕获 view controller 时写 `[weak self]`，否则它与视图会互相持有。
+- 代理（例如 `UITextFieldDelegate`）照常设置。
 
 ### Padding 与 frame
 
@@ -295,7 +320,7 @@ Xcode 15 及以上版本可以直接预览 UIKit 视图。UIKit 的 `#Preview` �
 
 ## 数据绑定
 
-DeclarativeUIKit 只负责布局：内容闭包只运行一次，库本身不提供绑定。之后需要变化或上报事件的视图，必须存成属性，再手动连接。
+DeclarativeUIKit 只负责布局：内容闭包只运行一次，库本身不提供绑定。之后需要变化的视图，必须存成属性，再手动更新。
 
 [DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) 是配套的包，用来省掉这一步。它为 UIKit 的控件、滚动视图和手势提供 Combine publisher，并提供一组 modifier，让视图在声明它的地方直接绑定到 publisher：
 
@@ -378,7 +403,7 @@ extension UIStackView {
 
 ### 表单
 
-控件就是普通的 `UITextField`、`UISwitch` 和 `UISlider`，用 modifier 配置并作为属性持有。事件使用 UIKit 自身的 target–action 与代理。`Spacer` 把开关和数值推到尾部边缘。
+控件就是普通的 `UITextField`、`UISwitch` 和 `UISlider`，用 modifier 配置并作为属性持有。事件用 `onEvent` 闭包和文本框的代理处理。`Spacer` 把开关和数值推到尾部边缘。
 
 <table>
 <tr>
@@ -393,8 +418,9 @@ private let frequency = UISlider()
     .value(3)
 
 // 在 viewDidLoad 中：
-frequency.addTarget(self, action: #selector(frequencyChanged),
-                    for: .valueChanged)
+frequency.onEvent(.valueChanged) { [weak self] _ in
+    self?.frequencyChanged()
+}
 
 VStack(alignment: .fill, spacing: 12) {
     HStack(spacing: 8) {

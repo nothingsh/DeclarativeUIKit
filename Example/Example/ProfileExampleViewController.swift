@@ -40,8 +40,8 @@ final class ProfileExampleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Profile card"
-        bioButton.addTarget(self, action: #selector(toggleBio), for: .touchUpInside)
-        statusButton.addTarget(self, action: #selector(toggleStatus), for: .touchUpInside)
+        bioButton.onEvent(.primaryActionTriggered) { [weak self] _ in self?.toggleBio() }
+        statusButton.onEvent(.primaryActionTriggered) { [weak self] _ in self?.toggleStatus() }
 
         addScreen {
             VStack(alignment: .leading, spacing: 12) {
@@ -82,12 +82,12 @@ final class ProfileExampleViewController: UIViewController {
         }
     }
 
-    @objc private func toggleBio() {
+    private func toggleBio() {
         bioButton.isSelected(!bioButton.isSelected)
         bio.text(bioButton.isSelected ? Self.longBio : Self.shortBio)
     }
 
-    @objc private func toggleStatus() {
+    private func toggleStatus() {
         statusButton.isSelected(!statusButton.isSelected)
         status.background(statusButton.isSelected ? .systemGray : .systemGreen)
     }
