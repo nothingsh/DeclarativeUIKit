@@ -83,6 +83,7 @@ final class KeyboardTests: XCTestCase {
         host.rootView.addContent(scroll)
         host.layout()
         keyboardWillMove(to: docked(height: 300))
+        XCTAssertGreaterThan(scroll.contentInset.bottom, 0)
 
         scroll.removeFromSuperview()
         keyboardWillMove(to: CGRect(x: 0, y: screen.maxY, width: screen.width, height: 300))

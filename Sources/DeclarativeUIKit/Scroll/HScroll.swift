@@ -15,9 +15,10 @@ public final class HScroll: UIScrollView {
     ).named("fillsViewport")
 
     // In a right-to-left layout, how far the visible area is from the right end of the
-    // scrolling range, and the widths it was measured at.
+    // scrolling range, the widths it was measured at, and the offset at that layout.
     private var distanceFromRightEnd: CGFloat = 0
     private var measuredWidths: (content: CGFloat, bounds: CGFloat) = (0, 0)
+    private var laidOutOffset: CGFloat = 0
 
     /// - Parameters:
     ///   - alignment: How the elements line up on the vertical axis.
@@ -49,7 +50,8 @@ public final class HScroll: UIScrollView {
 
     // UIScrollView keeps the left edge fixed, but a right-to-left stack starts at the right.
     // Keep the right end fixed instead, so scrolling starts at the first element and stays
-    // put as the content or the scroll view changes width.
+    // put as the content or the scroll view changes width. An offset set since the last
+    // layout, such as by `scrollRectToVisible`, is kept.
     public override func layoutSubviews() {
         super.layoutSubviews()
         guard stack.effectiveUserInterfaceLayoutDirection == .rightToLeft else { return }
@@ -57,9 +59,12 @@ public final class HScroll: UIScrollView {
         let maxOffset = max(contentSize.width + adjustedContentInset.right - bounds.width, minOffset)
         if measuredWidths != (contentSize.width, bounds.width) {
             measuredWidths = (contentSize.width, bounds.width)
-            contentOffset.x = min(max(maxOffset - distanceFromRightEnd, minOffset), maxOffset)
+            if contentOffset.x == laidOutOffset {
+                contentOffset.x = min(max(maxOffset - distanceFromRightEnd, minOffset), maxOffset)
+            }
         }
         distanceFromRightEnd = maxOffset - contentOffset.x
+        laidOutOffset = contentOffset.x
     }
 
     /// Sets whether the horizontal scroll indicator is shown.

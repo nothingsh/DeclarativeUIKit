@@ -313,12 +313,10 @@ private final class ListDelegate: NSObject, UICollectionViewDelegate {
         willDisplay cell: UICollectionViewCell,
         forItemAt indexPath: IndexPath
     ) {
+        guard indexPath.item == collectionView.numberOfItems(inSection: indexPath.section) - 1 else { return }
         // The last row may be in an earlier section when the last sections are empty.
-        let lastSection = (0..<collectionView.numberOfSections).last {
-            collectionView.numberOfItems(inSection: $0) > 0
-        }
-        if indexPath.section == lastSection,
-           indexPath.item == collectionView.numberOfItems(inSection: indexPath.section) - 1 {
+        let laterSections = indexPath.section + 1..<collectionView.numberOfSections
+        if laterSections.allSatisfy({ collectionView.numberOfItems(inSection: $0) == 0 }) {
             onReachEnd?()
         }
     }
