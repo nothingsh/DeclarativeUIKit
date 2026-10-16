@@ -37,8 +37,8 @@ final class PlaceholderLabel: UILabel {
     /// Whether the text came with its own attributes, so the text view's font is not applied.
     var isAttributed = false
     var top: NSLayoutConstraint!
-    var leading: NSLayoutConstraint!
-    var trailing: NSLayoutConstraint!
+    var left: NSLayoutConstraint!
+    var right: NSLayoutConstraint!
 
     @objc func textDidChange() {
         (superview as? UITextView)?.updatePlaceholder()
@@ -56,9 +56,10 @@ extension UITextView {
         addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.top = label.topAnchor.constraint(equalTo: topAnchor).named("placeholder.top")
-        label.leading = label.leadingAnchor.constraint(equalTo: frameLayoutGuide.leadingAnchor).named("placeholder.leading")
-        label.trailing = label.trailingAnchor.constraint(equalTo: frameLayoutGuide.trailingAnchor).named("placeholder.trailing")
-        NSLayoutConstraint.activate([label.top, label.leading, label.trailing])
+        // Physical edges, because `textContainerInset` does not flip in a right-to-left layout.
+        label.left = label.leftAnchor.constraint(equalTo: frameLayoutGuide.leftAnchor).named("placeholder.left")
+        label.right = label.rightAnchor.constraint(equalTo: frameLayoutGuide.rightAnchor).named("placeholder.right")
+        NSLayoutConstraint.activate([label.top, label.left, label.right])
         NotificationCenter.default.addObserver(
             label,
             selector: #selector(PlaceholderLabel.textDidChange),
@@ -80,8 +81,8 @@ extension UITextView {
         label.textAlignment = textAlignment
         let padding = textContainer.lineFragmentPadding
         label.top.constant = textContainerInset.top
-        label.leading.constant = textContainerInset.left + padding
-        label.trailing.constant = -(textContainerInset.right + padding)
+        label.left.constant = textContainerInset.left + padding
+        label.right.constant = -(textContainerInset.right + padding)
         label.isHidden = !text.isEmpty
     }
 }
