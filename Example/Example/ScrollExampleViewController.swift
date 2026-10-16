@@ -47,7 +47,7 @@ final class ScrollExampleViewController: UIViewController {
         .background {
             UIView()
                 .background(UIColor.systemBlue.withAlphaComponent(0.12))
-                .configure { $0.layer.cornerRadius = 8 }
+                .cornerRadius(8)
         }
     }
 

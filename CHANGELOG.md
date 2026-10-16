@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A documentation article on building reusable components, in the DocC catalog.
+
 ### Changed
 
 - Every constraint the library creates is named `DeclarativeUIKit.` followed by the modifier that made it, so layout conflicts in the console show where each constraint came from. The names of the `frame` constraints changed to the same format.

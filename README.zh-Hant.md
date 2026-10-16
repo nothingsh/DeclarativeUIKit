@@ -67,7 +67,7 @@ dependencies: [
 
 或在 Xcode 中選擇 File → Add Package Dependencies，輸入 `https://github.com/nothingsh/DeclarativeUIKit`。
 
-各版本的變更請見 [CHANGELOG.md](CHANGELOG.md)。版本號遵循[語意化版本](https://semver.org/lang/zh-TW/)。從 1.0 起，次版本只新增 API；改名的 API 會以已棄用的形式保留到下一個主版本；最低 iOS 版本只在主版本提高。1.0 之前，次版本可能修改 API，變更記錄會說明遷移方式。API 參考文件：在 Xcode 中開啟本 package，選擇 Product → Build Documentation。
+各版本的變更請見 [CHANGELOG.md](CHANGELOG.md)。版本號遵循[語意化版本](https://semver.org/lang/zh-TW/)。從 1.0 起，次版本只新增 API；改名的 API 會以已棄用的形式保留到下一個主版本；最低 iOS 版本只在主版本提高。1.0 之前，次版本可能修改 API，變更記錄會說明遷移方式。API 參考文件：在 Xcode 中開啟本 package，選擇 Product → Build Documentation；其中還有一篇撰寫可重複使用元件的指南。
 
 ## 用法
 
@@ -599,7 +599,7 @@ private func chip(_ text: String) -> UIView {
     .background {
         UIView()
             .background(UIColor.systemBlue.withAlphaComponent(0.12))
-            .configure { $0.layer.cornerRadius = 8 }
+            .cornerRadius(8)
     }
 }
 ```
