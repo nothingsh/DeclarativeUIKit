@@ -59,7 +59,7 @@ view.addVScroll(alignment: .fill, spacing: 16, safeArea: .all) {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeUIKit.git", from: "0.9.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeUIKit.git", from: "1.0.0")
 ]
 ```
 

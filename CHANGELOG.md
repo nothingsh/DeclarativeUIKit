@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-16
+
+The public API is now stable: minor versions only add API, and breaking changes wait for 2.0.
+
 ### Fixed
 
 - `overlay` on a scroll view, such as `VScroll`, `HScroll`, `VList` or `UITextView`, stays over the visible area instead of being placed on the scrolled content.
@@ -115,7 +119,8 @@ All notable changes to this project are documented here. The format follows
 
 First release.
 
-[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.9.0...1.0.0
 [0.9.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.6.0...0.7.0
