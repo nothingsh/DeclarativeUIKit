@@ -52,7 +52,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
 
 ## 安装
 
-需要 iOS 13.0+ 与 Swift 5.9+。使用 Swift Package Manager 添加：
+需要 iOS 15.0+ 与 Swift 5.9+。使用 Swift Package Manager 添加：
 
 ```swift
 dependencies: [
@@ -178,7 +178,7 @@ let avatar = UIImageView()
     .overlay(alignment: .bottomTrailing, offset: CGPoint(x: 4, y: 4)) { statusDot }
 ```
 
-- `background(_:)` 设置视图自身的 `backgroundColor`。在 iOS 13 上 stack 不会绘制它，因此请改用 `background { ... }` 给 stack 放一个带颜色的视图。
+- `background(_:)` 设置视图自身的 `backgroundColor`，stack 也会绘制它。`background { ... }` 则是在 stack 后面放一个完整的视图。
 - 视图形式的装饰是用约束固定的子视图；不会插入容器视图，也没有 `ZStack`。`alignment` 默认为 `.fill`，也可以是 `.topTrailing` 这样的位置。
 - 被装饰视图自身的内容决定其尺寸。
 - `offset` 把装饰从 `alignment` 确定的位置移开：x 正值朝右，y 正值朝下。这个值原样交给 Auto Layout：在从右到左的布局中，leading 或 trailing 对齐的水平方向会反过来，居中的对齐则不会；如果不希望这样，请自行调整传入的值。`.fill` 不接受 offset。
@@ -404,11 +404,9 @@ private func chip(_ text: String) -> UIView {
 
 每个页面都用 `safeArea: .all` 挂载其滚动视图，因此内容会避开导航栏、主屏幕指示条以及横屏时的传感器区域，而页面的背景色仍然铺满整个屏幕。
 
-示例应用的部署目标是 iOS 15.0，这是当前 Xcode 能构建的最低版本；参见[已知限制](#已知限制)。
+示例应用的部署目标是 iOS 15.0，与本 package 相同。
 
 ## 已知限制
-
-本 package 声明的最低版本是 iOS 13，新 API 都按 iOS 13 的可用性审查过，但从未针对 iOS 13 本身构建或运行过，因为当前的工具链已不再支持这个部署目标。目前经过验证的，是在较新 iOS 版本上的编译与测试。
 
 `VScroll` 与 `HScroll` 不是惰性的：所有元素都会预先创建并布局。它们适合页面和较短的列表；长列表或数量不定的列表请使用 `UITableView` 或 `UICollectionView`。
 

@@ -52,7 +52,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
 
 ## Installation
 
-Requires iOS 13.0+ and Swift 5.9+. Add the package with Swift Package Manager:
+Requires iOS 15.0+ and Swift 5.9+. Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
@@ -178,7 +178,7 @@ let avatar = UIImageView()
     .overlay(alignment: .bottomTrailing, offset: CGPoint(x: 4, y: 4)) { statusDot }
 ```
 
-- `background(_:)` sets the view's own `backgroundColor`. A stack does not draw it on iOS 13, so give a stack a colored view with `background { ... }` instead.
+- `background(_:)` sets the view's own `backgroundColor`, which a stack draws too. `background { ... }` puts a whole view behind a stack instead.
 - A view decoration is a subview pinned with constraints; no container view is inserted and there is no `ZStack`. `alignment` is `.fill` by default, or a position such as `.topTrailing`.
 - The decorated view's own content decides its size.
 - `offset` moves a decoration from where `alignment` puts it: x is positive toward the right and y toward the bottom. The value is passed to Auto Layout as it is: in a right-to-left layout a leading or trailing alignment reverses the horizontal direction and the centered ones do not, so adjust it yourself if that is not what you want. `.fill` takes no offset.
@@ -404,11 +404,9 @@ All text uses `font(textStyle:)`, so the screens follow Dynamic Type, and they a
 
 Each screen mounts its scroll view with `safeArea: .all`, so content stays clear of the navigation bar, the home indicator and, in landscape, the sensor housing, while the screen's background color still fills the whole display.
 
-The app's deployment target is iOS 15.0, the lowest the current Xcode can build; see [Known limitations](#known-limitations).
+The app's deployment target is iOS 15.0, the same as the package's.
 
 ## Known limitations
-
-The package declares a minimum of iOS 13 and new APIs are reviewed for iOS 13 availability, but nothing has been built or run against iOS 13 itself — current toolchains no longer support that deployment target. What is verified today is compilation and testing on recent iOS versions.
 
 `VScroll` and `HScroll` are not lazy: every element is created and laid out up front. They suit pages and short lists; for long or unbounded lists, use `UITableView` or `UICollectionView`.
 

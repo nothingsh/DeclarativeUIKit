@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "DeclarativeUIKit",
-    platforms: [.iOS(.v13)],
+    platforms: [.iOS(.v15)],
     products: [
         .library(name: "DeclarativeUIKit", targets: ["DeclarativeUIKit"])
     ],
