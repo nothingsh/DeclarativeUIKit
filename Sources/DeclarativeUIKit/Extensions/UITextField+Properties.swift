@@ -38,6 +38,16 @@ public extension UITextField {
         return self
     }
 
+    /// Scales `value` with Dynamic Type the way the system font for `textStyle`
+    /// scales, so a custom font follows the content size category. Give the
+    /// size the font should have at the default category.
+    @discardableResult
+    func font(_ value: UIFont, relativeTo textStyle: UIFont.TextStyle) -> Self {
+        self.font = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: value)
+        self.adjustsFontForContentSizeCategory = true
+        return self
+    }
+
     @discardableResult
     func textColor(_ value: UIColor?) -> Self {
         self.textColor = value
