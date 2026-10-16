@@ -12,7 +12,7 @@ public final class VScroll: UIScrollView {
 
     private lazy var fillsViewportConstraint = stack.heightAnchor.constraint(
         greaterThanOrEqualTo: frameLayoutGuide.heightAnchor
-    )
+    ).named("fillsViewport")
 
     /// - Parameters:
     ///   - alignment: How the elements line up on the horizontal axis.

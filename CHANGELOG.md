@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Every constraint the library creates is named `DeclarativeUIKit.` followed by the modifier that made it, so layout conflicts in the console show where each constraint came from. The names of the `frame` constraints changed to the same format.
 - `VList.update(_ sections:animated:)` is now `update(sections:animated:)`, like `init(sections:…)`, so `list.update([])` compiles and empties a list.
 - `padding(_:_:)` takes both the edges and the length; it no longer adds 16 points when they are left out.
 - `HorizontalAlignment` and `VerticalAlignment` are `Sendable`.

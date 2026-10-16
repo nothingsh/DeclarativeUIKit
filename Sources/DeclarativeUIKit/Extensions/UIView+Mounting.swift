@@ -46,16 +46,16 @@ public extension UIView {
         NSLayoutConstraint.activate([
             content.leadingAnchor.constraint(
                 equalTo: safeArea.contains(.leading) ? guide.leadingAnchor : leadingAnchor
-            ),
+            ).named("addContent.leading"),
             content.trailingAnchor.constraint(
                 equalTo: safeArea.contains(.trailing) ? guide.trailingAnchor : trailingAnchor
-            ),
+            ).named("addContent.trailing"),
             content.topAnchor.constraint(
                 equalTo: safeArea.contains(.top) ? guide.topAnchor : topAnchor
-            ),
+            ).named("addContent.top"),
             content.bottomAnchor.constraint(
                 equalTo: safeArea.contains(.bottom) ? guide.bottomAnchor : bottomAnchor
-            )
+            ).named("addContent.bottom")
         ])
 
         return content

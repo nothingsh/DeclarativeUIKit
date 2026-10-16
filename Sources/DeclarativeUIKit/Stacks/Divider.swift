@@ -58,6 +58,6 @@ public final class Divider: UIView {
         let length = axis == .vertical
             ? widthAnchor.constraint(equalTo: stack.isLayoutMarginsRelativeArrangement ? guide.widthAnchor : stack.widthAnchor)
             : heightAnchor.constraint(equalTo: stack.isLayoutMarginsRelativeArrangement ? guide.heightAnchor : stack.heightAnchor)
-        length.isActive = true
+        length.named("divider.length").isActive = true
     }
 }

@@ -45,14 +45,12 @@ public extension UIView {
             "frame aspect ratio must be finite and greater than 0."
         )
         translatesAutoresizingMaskIntoConstraints = false
-        let identifier = "DeclarativeUIKit.aspectRatio"
-        constraints.first { $0.identifier == identifier }?.isActive = false
+        let name = "frame.aspectRatio"
+        constraints.first { $0.identifier == "DeclarativeUIKit.\(name)" }?.isActive = false
 
         if let ratio {
             // The multiplier cannot change after creation, so a new ratio is a new constraint.
-            let constraint = widthAnchor.constraint(equalTo: heightAnchor, multiplier: ratio)
-            constraint.identifier = identifier
-            constraint.isActive = true
+            widthAnchor.constraint(equalTo: heightAnchor, multiplier: ratio).named(name).isActive = true
         }
         return self
     }
@@ -63,7 +61,7 @@ private enum SizeAxis: String {
     case height
 }
 
-private enum SizeBound: String {
+private enum SizeBound {
     case fixed
     case min
     case max
@@ -103,8 +101,13 @@ private extension UIView {
     /// Updates the library's constraint for `axis` and `bound`, creating it if needed.
     /// A `nil` length removes it. Constraints the library did not create are untouched.
     func setSizeConstraint(_ axis: SizeAxis, _ bound: SizeBound, _ length: CGFloat?) {
-        let identifier = "DeclarativeUIKit.\(axis.rawValue).\(bound.rawValue)"
-        let existing = constraints.first { $0.identifier == identifier }
+        let name: String
+        switch bound {
+        case .fixed: name = "frame.\(axis.rawValue)"
+        case .min: name = axis == .width ? "frame.minWidth" : "frame.minHeight"
+        case .max: name = axis == .width ? "frame.maxWidth" : "frame.maxHeight"
+        }
+        let existing = constraints.first { $0.identifier == "DeclarativeUIKit.\(name)" }
 
         guard let length else {
             existing?.isActive = false
@@ -122,7 +125,6 @@ private extension UIView {
         case .min: constraint = dimension.constraint(greaterThanOrEqualToConstant: length)
         case .max: constraint = dimension.constraint(lessThanOrEqualToConstant: length)
         }
-        constraint.identifier = identifier
-        constraint.isActive = true
+        constraint.named(name).isActive = true
     }
 }

@@ -217,12 +217,16 @@ public final class VList<Item>: UICollectionView {
             container.addSubview(view)
             view.translatesAutoresizingMaskIntoConstraints = false
             let centerX = view.centerXAnchor.constraint(equalTo: container.centerXAnchor, constant: offset.x)
+                .named("emptyView.centerX")
             centerX.priority = .required - 1
             NSLayoutConstraint.activate([
                 centerX,
-                view.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: offset.y),
-                view.leadingAnchor.constraint(greaterThanOrEqualTo: container.layoutMarginsGuide.leadingAnchor),
+                view.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: offset.y)
+                    .named("emptyView.centerY"),
+                view.leadingAnchor.constraint(greaterThanOrEqualTo: container.layoutMarginsGuide.leadingAnchor)
+                    .named("emptyView.leading"),
                 view.trailingAnchor.constraint(lessThanOrEqualTo: container.layoutMarginsGuide.trailingAnchor)
+                    .named("emptyView.trailing")
             ])
             container.isHidden = !items.isEmpty
             return container

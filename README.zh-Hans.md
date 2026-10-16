@@ -44,6 +44,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [键盘](#键盘)
   - [列表](#列表)
   - [Xcode 预览](#xcode-预览)
+  - [调试布局](#调试布局)
 - [数据绑定](#数据绑定)
 - [示例应用](#示例应用)
   - [个人资料卡片](#个人资料卡片)
@@ -422,6 +423,18 @@ Xcode 15 及以上版本可以直接预览 UIKit 视图。UIKit 的 `#Preview` �
     .padding(16)
 }
 ```
+
+### 调试布局
+
+库创建的每一条约束都以 `DeclarativeUIKit.` 加上创建它的 modifier 命名，例如 `addContent.top`、`frame.width`、`overlay.centerY`、`spacer.minLength` 或 `fillsViewport`。约束冲突时，控制台会显示这些名字，由此可以知道该修改哪个 modifier：
+
+```text
+Unable to simultaneously satisfy constraints.
+    <NSLayoutConstraint:0x600002b0c3c0 'DeclarativeUIKit.frame.width' UIView:0x10310a2c0.width == 40   (active)>
+    <NSLayoutConstraint:0x600002b0c460 'DeclarativeUIKit.addContent.leading' H:|-(0)-[UIView:0x10310a2c0]   (active, names: '|':UIView:0x10310a100 )>
+```
+
+UIKit 自己的工具照常可用：Xcode 的 View Debugger 显示视图层级和每个视图的约束，`hasAmbiguousLayout` 与 `exerciseAmbiguityInLayout()` 可以找出尺寸或位置没有完全确定的视图。
 
 ## 数据绑定
 
