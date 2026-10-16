@@ -40,12 +40,14 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background and overlay](#background-and-overlay)
   - [Spacer](#spacer)
   - [Scroll views](#scroll-views)
+  - [Lists](#lists)
   - [Xcode previews](#xcode-previews)
 - [Data binding](#data-binding)
 - [Example app](#example-app)
   - [Profile card](#profile-card)
   - [Form](#form)
   - [Scrolling](#scrolling)
+  - [List](#list)
 - [Known limitations](#known-limitations)
 - [Development](#development)
 - [License](#license)
@@ -213,6 +215,69 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 - `alignment`, `spacing`, `spacing(_:after:)` and every form of `padding` are forwarded to `stack`; the padding lies inside the scrolled content.
 - `contentInsetAdjustmentBehavior` is `.never`, so the content starts at the scroll view's edges. Mount the scroll view with `safeArea` to keep it inside the safe area.
 
+### Lists
+
+`VList` is a vertical list that creates rows as they scroll into view and updates them by diffing. It is a `UICollectionView` with UIKit's list layout and a diffable data source; the library adds only the row declarations.
+
+```swift
+final class OrderRow: UIView, ListRowView {
+    private let title = UILabel().font(textStyle: .headline)
+    private let price = UILabel().font(textStyle: .body)
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        addHStack(spacing: 12) {
+            title
+            Spacer()
+            price
+        }
+        .padding(horizontal: 16, vertical: 12)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func update(_ order: Order) {
+        title.text(order.title)
+        price.text(order.price)
+    }
+}
+
+let orders = view.addContent(VList<Order>(id: \.id) { [weak self] order in
+    ListRow(OrderRow.self) { $0.update(order) }
+        .accessories([.disclosureIndicator()])
+        .onSelect { self?.show(order) }
+}, safeArea: .all)
+
+orders.update(firstPage)
+orders.update(firstPage + secondPage)
+```
+
+- `update` inserts, removes and moves rows by `id`, animated by default. Every row whose id is in both the old and the new data is configured again, so `Item` need not be `Equatable`. Ids must be unique across the whole list.
+- `ListRow(OrderRow.self) { … }` is a reusable row. The list creates the view with `init()`, once per cell, and calls the closure each time the row is shown or its item changes; keep the closure to plain assignments. The view never sees an item when it is created, so no item's data can stick to a view that is reused for another item.
+- `ListRow { … }` rebuilds its view every time. It suits static rows such as an app version; a row with controls or frequent updates should be reusable, since rebuilding loses control state.
+- `accessories` takes UIKit's `UICellAccessory` values. Only rows with `onSelect` highlight; after the action runs, the row is deselected.
+- Rows fill the cell and size themselves with Auto Layout. The list adds no padding of its own, so each row sets its own.
+- For grouped screens, pass `sections:` and an `appearance` such as `.insetGrouped`. A `ListSection` takes an `id` and optional `header` and `footer` text, shown in UIKit's default style.
+
+```swift
+let settings = VList(
+    sections: [
+        ListSection(id: "general", header: "General", items: [Setting.account, .notifications]),
+        ListSection(id: "about", items: [Setting.version])
+    ],
+    id: \.self,
+    appearance: .insetGrouped
+) { setting in
+    ListRow { SettingRow(setting) }
+}
+```
+
+- `listConfiguration` adjusts UIKit's `UICollectionLayoutListConfiguration` for every section. The separators start where the system puts them, which varies by iOS version and device; to line them up with your rows' padding, set `separatorConfiguration` there.
+- Like the scroll views, `VList` uses `contentInsetAdjustmentBehavior = .never`; mount it with `safeArea`.
+- The list is its own `delegate`, for selection. Replacing the delegate stops `onSelect`.
+- The list keeps the row closure, and each cell keeps its `onSelect` action. Capture a view controller with `[weak self]`, or it and the list keep each other alive.
+- With [DeclarativeCombine](#data-binding), `onReceive` feeds a publisher into `update`: `list.onReceive(viewModel.$orders) { $0.update($1) }`.
+
 ### Xcode previews
 
 Xcode 15 and later preview a UIKit view directly. The `#Preview` macro for UIKit needs iOS 17, so in a target that supports older versions, mark the preview with `@available(iOS 17, *)`. Only the preview needs iOS 17; the rest of the code keeps its deployment target.
@@ -251,7 +316,7 @@ It is optional and separate. DeclarativeUIKit does not depend on it, and it does
 
 ## Example app
 
-`Example/Example.xcodeproj` is a small iOS app that uses the library as a local package. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. The snippets below are trimmed from its three screens.
+`Example/Example.xcodeproj` is a small iOS app that uses the library as a local package. Open it in Xcode, choose the `Example` scheme and an iOS Simulator, and run. The snippets below are trimmed from its four screens.
 
 ### Profile card
 
@@ -400,6 +465,51 @@ private func chip(_ text: String) -> UIView {
 </tr>
 </table>
 
+### List
+
+An `.insetGrouped` `VList` with a header and footer. `MessageRow` and `SwitchRow` are reusable rows; the version row is rebuilt each time. *Add* and tapping a message change the data and call `update`, which inserts the new row with animation, refreshes the changed row and the unread count in the header.
+
+<table>
+<tr>
+<td>
+
+```swift
+VList(sections: sections(), id: \.id, appearance: .insetGrouped) { [weak self] row in
+    switch row {
+    case .message(let message):
+        return ListRow(MessageRow.self) { $0.update(message) }
+            .onSelect { self?.toggleRead(message.id) }
+    case .notifications:
+        return ListRow(SwitchRow.self) {
+            $0.update(title: "Notifications", isOn: self?.notifications ?? false)
+            $0.onChange = { self?.notifications = $0 }
+        }
+    case .version:
+        return ListRow {
+            HStack(spacing: 8) {
+                UILabel().text("Version").font(textStyle: .body)
+                Spacer()
+                UILabel().text("1.0").font(textStyle: .body).textColor(.secondaryLabel)
+            }
+            .padding(horizontal: 16, vertical: 12)
+        }
+    }
+}
+
+private func toggleRead(_ id: Int) {
+    guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
+    messages[index].isRead.toggle()
+    list.update(sections())
+}
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-list.png" width="300" alt="List screen">
+</td>
+</tr>
+</table>
+
 All text uses `font(textStyle:)`, so the screens follow Dynamic Type, and they adapt to rotation. Content closures run once; later changes are made through the views themselves, not through data binding.
 
 Each screen mounts its scroll view with `safeArea: .all`, so content stays clear of the navigation bar, the home indicator and, in landscape, the sensor housing, while the screen's background color still fills the whole display.
@@ -408,7 +518,7 @@ The app's deployment target is iOS 15.0, the same as the package's.
 
 ## Known limitations
 
-`VScroll` and `HScroll` are not lazy: every element is created and laid out up front. They suit pages and short lists; for long or unbounded lists, use `UITableView` or `UICollectionView`.
+`VScroll` and `HScroll` are not lazy: every element is created and laid out up front. They suit pages and short lists; for long or data-driven lists, use [`VList`](#lists).
 
 ## Development
 

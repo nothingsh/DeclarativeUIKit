@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `VList`, a vertical list that creates rows lazily and updates them by diffing, with `ListRow`, `ListRowView` and `ListSection`.
+
 ### Changed
 
 - The minimum deployment target is iOS 15.0, raised from iOS 13.0.

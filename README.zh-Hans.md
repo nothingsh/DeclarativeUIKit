@@ -40,12 +40,14 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background 与 overlay](#background-与-overlay)
   - [Spacer](#spacer)
   - [滚动视图](#滚动视图)
+  - [列表](#列表)
   - [Xcode 预览](#xcode-预览)
 - [数据绑定](#数据绑定)
 - [示例应用](#示例应用)
   - [个人资料卡片](#个人资料卡片)
   - [表单](#表单)
   - [滚动](#滚动)
+  - [分组列表](#分组列表)
 - [已知限制](#已知限制)
 - [开发](#开发)
 - [许可证](#许可证)
@@ -213,6 +215,69 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 - `alignment`、`spacing`、`spacing(_:after:)` 以及各种形式的 `padding` 都会转发给 `stack`；padding 位于滚动内容之内。
 - `contentInsetAdjustmentBehavior` 为 `.never`，因此内容从滚动视图的边缘开始。用 `safeArea` 挂载滚动视图可以让它保持在安全区内。
 
+### 列表
+
+`VList` 是竖直列表：行在滚动进入屏幕时才创建，数据更新时按差异刷新。它是使用 UIKit 列表布局和 diffable data source 的 `UICollectionView`，库只增加了行的声明方式。
+
+```swift
+final class OrderRow: UIView, ListRowView {
+    private let title = UILabel().font(textStyle: .headline)
+    private let price = UILabel().font(textStyle: .body)
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        addHStack(spacing: 12) {
+            title
+            Spacer()
+            price
+        }
+        .padding(horizontal: 16, vertical: 12)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func update(_ order: Order) {
+        title.text(order.title)
+        price.text(order.price)
+    }
+}
+
+let orders = view.addContent(VList<Order>(id: \.id) { [weak self] order in
+    ListRow(OrderRow.self) { $0.update(order) }
+        .accessories([.disclosureIndicator()])
+        .onSelect { self?.show(order) }
+}, safeArea: .all)
+
+orders.update(firstPage)
+orders.update(firstPage + secondPage)
+```
+
+- `update` 按 `id` 插入、删除、移动行，默认带动画。新旧数据中都有的 id 对应的行都会重新配置，所以 `Item` 不需要遵循 `Equatable`。id 在整个列表内必须唯一。
+- `ListRow(OrderRow.self) { … }` 是可复用行。列表用 `init()` 创建 view，每个 cell 一次；每当这一行显示或其 item 变化时调用闭包，闭包里只做赋值。view 创建时拿不到 item，所以不会有某一项的数据残留在被复用到其他项的 view 上。
+- `ListRow { … }` 每次都重建 view，适合静态的行，例如 App 版本号。带控件或频繁更新的行应当用可复用行，因为重建会丢失控件状态。
+- `accessories` 接受 UIKit 的 `UICellAccessory`。只有设置了 `onSelect` 的行会高亮；闭包执行后该行立即取消选中。
+- 行内容贴满 cell，由 Auto Layout 决定高度。列表本身不加内边距，padding 由每一行自己设置。
+- 分组页面传入 `sections:` 和 `appearance`，例如 `.insetGrouped`。`ListSection` 接受 `id` 以及可选的 `header`、`footer` 文字，使用 UIKit 的默认样式。
+
+```swift
+let settings = VList(
+    sections: [
+        ListSection(id: "general", header: "General", items: [Setting.account, .notifications]),
+        ListSection(id: "about", items: [Setting.version])
+    ],
+    id: \.self,
+    appearance: .insetGrouped
+) { setting in
+    ListRow { SettingRow(setting) }
+}
+```
+
+- `listConfiguration` 调整每个 section 的 `UICollectionLayoutListConfiguration`。分割线的起点由系统决定，随 iOS 版本和机型变化；要和行的 padding 对齐，在这里设置 `separatorConfiguration`。
+- 与滚动视图一样，`VList` 的 `contentInsetAdjustmentBehavior` 为 `.never`；用 `safeArea` 挂载它。
+- 列表自己担任 `delegate` 来处理选中。替换 delegate 会让 `onSelect` 失效。
+- 列表持有 row 闭包，每个 cell 持有自己的 `onSelect` 闭包。捕获 view controller 时写 `[weak self]`，否则它与列表会互相持有。
+- 配合 [DeclarativeCombine](#数据绑定) 时，用 `onReceive` 把 publisher 接到 `update`：`list.onReceive(viewModel.$orders) { $0.update($1) }`。
+
 ### Xcode 预览
 
 Xcode 15 及以上版本可以直接预览 UIKit 视图。UIKit 的 `#Preview` 宏需要 iOS 17，因此在支持更低版本的 target 中，要给预览加上 `@available(iOS 17, *)`。只有预览需要 iOS 17，其余代码的部署目标不变。
@@ -251,7 +316,7 @@ view.addVStack(alignment: .fill, spacing: 12) {
 
 ## 示例应用
 
-`Example/Example.xcodeproj` 是一个以本地 package 方式使用本库的小型 iOS 应用。在 Xcode 中打开它，选择 `Example` scheme 和一个 iOS 模拟器，然后运行。下面的代码片段节选自它的三个页面。
+`Example/Example.xcodeproj` 是一个以本地 package 方式使用本库的小型 iOS 应用。在 Xcode 中打开它，选择 `Example` scheme 和一个 iOS 模拟器，然后运行。下面的代码片段节选自它的四个页面。
 
 ### 个人资料卡片
 
@@ -400,6 +465,51 @@ private func chip(_ text: String) -> UIView {
 </tr>
 </table>
 
+### 分组列表
+
+带标题和脚注的 `.insetGrouped` `VList`。`MessageRow` 和 `SwitchRow` 是可复用行；版本号一行每次重建。点 *Add* 或点击消息会修改数据并调用 `update`：新行带动画插入，变化的行和标题里的未读数随之刷新。
+
+<table>
+<tr>
+<td>
+
+```swift
+VList(sections: sections(), id: \.id, appearance: .insetGrouped) { [weak self] row in
+    switch row {
+    case .message(let message):
+        return ListRow(MessageRow.self) { $0.update(message) }
+            .onSelect { self?.toggleRead(message.id) }
+    case .notifications:
+        return ListRow(SwitchRow.self) {
+            $0.update(title: "Notifications", isOn: self?.notifications ?? false)
+            $0.onChange = { self?.notifications = $0 }
+        }
+    case .version:
+        return ListRow {
+            HStack(spacing: 8) {
+                UILabel().text("Version").font(textStyle: .body)
+                Spacer()
+                UILabel().text("1.0").font(textStyle: .body).textColor(.secondaryLabel)
+            }
+            .padding(horizontal: 16, vertical: 12)
+        }
+    }
+}
+
+private func toggleRead(_ id: Int) {
+    guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
+    messages[index].isRead.toggle()
+    list.update(sections())
+}
+```
+
+</td>
+<td width="300">
+<img src="docs/images/example-list.png" width="300" alt="列表页面">
+</td>
+</tr>
+</table>
+
 所有文字都使用 `font(textStyle:)`，因此各页面会跟随动态字体，并能适应旋转。内容闭包只运行一次；之后的变化通过视图本身完成，而不是通过数据绑定。
 
 每个页面都用 `safeArea: .all` 挂载其滚动视图，因此内容会避开导航栏、主屏幕指示条以及横屏时的传感器区域，而页面的背景色仍然铺满整个屏幕。
@@ -408,7 +518,7 @@ private func chip(_ text: String) -> UIView {
 
 ## 已知限制
 
-`VScroll` 与 `HScroll` 不是惰性的：所有元素都会预先创建并布局。它们适合页面和较短的列表；长列表或数量不定的列表请使用 `UITableView` 或 `UICollectionView`。
+`VScroll` 与 `HScroll` 不是惰性的：所有元素都会预先创建并布局。它们适合页面和较短的列表；较长或由数据驱动的列表请使用 [`VList`](#列表)。
 
 ## 开发
 

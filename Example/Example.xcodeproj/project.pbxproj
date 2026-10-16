@@ -13,6 +13,7 @@
 		715BC75D1EED3E4A51F7B469 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B0C7D7CDCC3AB7C99E21F032 /* LaunchScreen.storyboard */; };
 		8518A8A761D1F97F76083C75 /* ExampleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54C650DECD5F26572D8E78 /* ExampleStyle.swift */; };
 		85832E9EB068A8B91FE8D8CF /* DeclarativeUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = D0743AF715102DF597BDBDB1 /* DeclarativeUIKit */; };
+		A20B214B7AF1EBAF8F4AC3D5 /* ListExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9691FA14EF73012D1337BE77 /* ListExampleViewController.swift */; };
 		A6F1B48A8ECB4857F6AF41D9 /* ScrollExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A94CAE76E59DD900EC9188F /* ScrollExampleViewController.swift */; };
 		AC88DDA5C7A1AF78D816D392 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67979B086750BD69A85512EA /* SceneDelegate.swift */; };
 		FD256BEF4833313A35143E51 /* FormExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831248BFDB12A705F85319DA /* FormExampleViewController.swift */; };
@@ -26,6 +27,7 @@
 		67979B086750BD69A85512EA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		7A94CAE76E59DD900EC9188F /* ScrollExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollExampleViewController.swift; sourceTree = "<group>"; };
 		831248BFDB12A705F85319DA /* FormExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExampleViewController.swift; sourceTree = "<group>"; };
+		9691FA14EF73012D1337BE77 /* ListExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListExampleViewController.swift; sourceTree = "<group>"; };
 		A263B39369367A3901B6B7C0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A70CCE019BA3AE518E7FE7F3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0C7D7CDCC3AB7C99E21F032 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 				831248BFDB12A705F85319DA /* FormExampleViewController.swift */,
 				A70CCE019BA3AE518E7FE7F3 /* Info.plist */,
 				B0C7D7CDCC3AB7C99E21F032 /* LaunchScreen.storyboard */,
+				9691FA14EF73012D1337BE77 /* ListExampleViewController.swift */,
 				658A1B210DAD7F9F3859CD03 /* ProfileExampleViewController.swift */,
 				67979B086750BD69A85512EA /* SceneDelegate.swift */,
 				7A94CAE76E59DD900EC9188F /* ScrollExampleViewController.swift */,
@@ -116,6 +119,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 36FC72E69D906F48675C62BF /* Build configuration list for PBXProject "Example" */;
 			developmentRegion = en;
@@ -159,6 +164,7 @@
 				8518A8A761D1F97F76083C75 /* ExampleStyle.swift in Sources */,
 				297953BDE25C6AFC68DAF7BD /* ExamplesViewController.swift in Sources */,
 				FD256BEF4833313A35143E51 /* FormExampleViewController.swift in Sources */,
+				A20B214B7AF1EBAF8F4AC3D5 /* ListExampleViewController.swift in Sources */,
 				11A9095251846DE9E5B9796D /* ProfileExampleViewController.swift in Sources */,
 				AC88DDA5C7A1AF78D816D392 /* SceneDelegate.swift in Sources */,
 				A6F1B48A8ECB4857F6AF41D9 /* ScrollExampleViewController.swift in Sources */,
