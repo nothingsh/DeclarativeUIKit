@@ -350,16 +350,6 @@ AppKit 版本见姊妹 package [DeclarativeAppKit](https://github.com/nothingsh/
 
 变更记录见 [CHANGELOG.md](CHANGELOG.md)。版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。从 1.0 起，次版本只新增 API；改名的 API 会以已废弃的形式保留到下一个主版本；最低 iOS 版本只在主版本提高。1.0 之前，次版本可能修改 API，变更记录会给出迁移方法。
 
-## 开发
-
-测试用到 UIKit，所以要在 iOS 模拟器中运行，而不是用 `swift test`：
-
-```sh
-IOS_SIMULATOR_ID=<simulator UDID> scripts/test-ios.sh
-```
-
-用 `xcrun simctl list devices available` 查找 UDID。
-
 ## 许可证
 
 [MIT](LICENSE)，Copyright (c) 2026 Wynn。

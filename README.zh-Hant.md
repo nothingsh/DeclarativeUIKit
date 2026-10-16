@@ -350,16 +350,6 @@ AppKit 版本請見姊妹 package [DeclarativeAppKit](https://github.com/nothing
 
 變更記錄請見 [CHANGELOG.md](CHANGELOG.md)。版本號遵循[語意化版本](https://semver.org/lang/zh-TW/)。從 1.0 起，次版本只新增 API；改名的 API 會以已棄用的形式保留到下一個主版本；最低 iOS 版本只在主版本提高。1.0 之前，次版本可能修改 API，變更記錄會說明遷移方式。
 
-## 開發
-
-測試用到 UIKit，所以要在 iOS 模擬器中執行，而不是用 `swift test`：
-
-```sh
-IOS_SIMULATOR_ID=<simulator UDID> scripts/test-ios.sh
-```
-
-用 `xcrun simctl list devices available` 尋找 UDID。
-
 ## 授權
 
 [MIT](LICENSE)，Copyright (c) 2026 Wynn。
