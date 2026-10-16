@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-16
+
 ### Added
 
 - `Divider`, a hairline across the stack it is in.
@@ -87,7 +89,8 @@ All notable changes to this project are documented here. The format follows
 
 First release.
 
-[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.8.0...HEAD
+[0.8.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.4.0...0.5.0
