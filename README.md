@@ -102,6 +102,7 @@ let column = VStack(alignment: .leading, spacing: 4) {
 - `alignment` is the cross axis: `leading`, `center`, `trailing` or `fill` for a `VStack`; `top`, `center`, `bottom`, `firstTextBaseline`, `lastTextBaseline` or `fill` for an `HStack`. `fill` stretches every element.
 - `spacing` defaults to `0`, so the gaps you see are the ones you write. `.spacing(_:)`, `.alignment(_:)` and `.distribution(_:)` change a stack afterwards, and `.spacing(_:after:)` sets a different distance after one element.
 - A content closure accepts views, optional views, arrays, `if` / `else`, `switch`, `for` and `if #available`.
+- A content closure runs once. To show different elements later, keep the stack and call `replaceContent { … }`: the old elements leave the view hierarchy, and a background or overlay stays.
 
 ### Property modifiers
 
@@ -237,7 +238,7 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 
 - `HScroll` and `VScroll` are `UIScrollView` subclasses that arrange their elements with an embedded stack, available as `stack`. The elements decide the content size; on the other axis the content matches the scroll view.
 - Nested in a stack, an `HScroll` takes its height from its elements but needs its width from outside, and a `VScroll` the reverse: use `.fill` alignment, as above, or `frame`.
-- `alignment`, `spacing`, `spacing(_:after:)` and every form of `padding` are forwarded to `stack`; the padding lies inside the scrolled content.
+- `alignment`, `spacing`, `spacing(_:after:)`, `replaceContent` and every form of `padding` are forwarded to `stack`; the padding lies inside the scrolled content.
 - `contentInsetAdjustmentBehavior` is `.never`, so the content starts at the scroll view's edges. Mount the scroll view with `safeArea` to keep it inside the safe area.
 
 ### Lists

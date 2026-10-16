@@ -102,6 +102,7 @@ let column = VStack(alignment: .leading, spacing: 4) {
 - `alignment` 是交叉轴上的对齐：`VStack` 可取 `leading`、`center`、`trailing` 或 `fill`；`HStack` 可取 `top`、`center`、`bottom`、`firstTextBaseline`、`lastTextBaseline` 或 `fill`。`fill` 会拉伸每个元素。
 - `spacing` 默认为 `0`，因此你看到的间距就是你写下的间距。之后可以用 `.spacing(_:)`、`.alignment(_:)` 与 `.distribution(_:)` 修改，用 `.spacing(_:after:)` 单独设置某个元素之后的间距。
 - 内容闭包接受视图、可选视图、数组、`if` / `else`、`switch`、`for` 与 `if #available`。
+- 内容闭包只运行一次。之后要显示别的元素，持有这个 stack 并调用 `replaceContent { … }`：旧元素会移出视图层级，background 与 overlay 保留。
 
 ### 属性 modifier
 
@@ -237,7 +238,7 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 
 - `HScroll` 与 `VScroll` 是 `UIScrollView` 的子类，用内置的 stack 排列元素，可通过 `stack` 访问。元素决定 content size；在另一条轴上，内容与滚动视图一致。
 - 嵌套在 stack 中时，`HScroll` 的高度由元素决定，但宽度需要由外部给出，`VScroll` 则相反：像上面那样使用 `.fill` 对齐，或使用 `frame`。
-- `alignment`、`spacing`、`spacing(_:after:)` 以及各种形式的 `padding` 都会转发给 `stack`；padding 位于滚动内容之内。
+- `alignment`、`spacing`、`spacing(_:after:)`、`replaceContent` 以及各种形式的 `padding` 都会转发给 `stack`；padding 位于滚动内容之内。
 - `contentInsetAdjustmentBehavior` 为 `.never`，因此内容从滚动视图的边缘开始。用 `safeArea` 挂载滚动视图可以让它保持在安全区内。
 
 ### 列表

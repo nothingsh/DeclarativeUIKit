@@ -137,4 +137,25 @@ final class StackTests: XCTestCase {
         XCTAssertEqual(second.frame.minY - first.frame.maxY, 20)
         XCTAssertEqual(third.frame.minY - second.frame.maxY, 4, "Other gaps keep spacing.")
     }
+
+    func testReplaceContentSwapsTheElementsAndKeepsTheBackground() {
+        let kept = fixedSizeView(width: 20, height: 10)
+        let removed = fixedSizeView(width: 20, height: 30)
+        let added = fixedSizeView(width: 20, height: 50)
+        let backdrop = UIView()
+        let stack = VStack(spacing: 4) {
+            kept
+            removed
+        }
+        .background { backdrop }
+
+        stack.replaceContent {
+            added
+            kept
+        }
+        XCTAssertEqual(stack.arrangedSubviews, [added, kept])
+        XCTAssertNil(removed.superview)
+        XCTAssertTrue(backdrop.superview === stack)
+        XCTAssertEqual(fittingSize(stack).height, 64)
+    }
 }
