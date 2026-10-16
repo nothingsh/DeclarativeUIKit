@@ -44,6 +44,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Keyboard](#keyboard)
   - [Lists](#lists)
   - [Xcode previews](#xcode-previews)
+  - [Debugging layout](#debugging-layout)
 - [Data binding](#data-binding)
 - [Example app](#example-app)
   - [Profile card](#profile-card)
@@ -422,6 +423,18 @@ Xcode 15 and later preview a UIKit view directly. The `#Preview` macro for UIKit
     .padding(16)
 }
 ```
+
+### Debugging layout
+
+Every constraint the library creates is named `DeclarativeUIKit.` followed by the modifier that made it, such as `addContent.top`, `frame.width`, `overlay.centerY`, `spacer.minLength` or `fillsViewport`. When constraints conflict, the console shows those names, so you can tell which modifier to change:
+
+```text
+Unable to simultaneously satisfy constraints.
+    <NSLayoutConstraint:0x600002b0c3c0 'DeclarativeUIKit.frame.width' UIView:0x10310a2c0.width == 40   (active)>
+    <NSLayoutConstraint:0x600002b0c460 'DeclarativeUIKit.addContent.leading' H:|-(0)-[UIView:0x10310a2c0]   (active, names: '|':UIView:0x10310a100 )>
+```
+
+UIKit's own tools work as usual: Xcode's View Debugger shows the hierarchy and each view's constraints, and `hasAmbiguousLayout` and `exerciseAmbiguityInLayout()` find views whose size or position is not fully determined.
 
 ## Data binding
 

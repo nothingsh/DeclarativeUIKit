@@ -57,32 +57,39 @@ extension UIView {
         }
         decoration.translatesAutoresizingMaskIntoConstraints = false
 
+        let source = behind ? "background" : "overlay"
         var constraints: [NSLayoutConstraint] = []
         switch alignment {
         case .fill:
             constraints += [
-                decoration.leadingAnchor.constraint(equalTo: leadingAnchor),
-                decoration.trailingAnchor.constraint(equalTo: trailingAnchor)
+                decoration.leadingAnchor.constraint(equalTo: leadingAnchor).named("\(source).leading"),
+                decoration.trailingAnchor.constraint(equalTo: trailingAnchor).named("\(source).trailing")
             ]
         case .leading, .topLeading, .bottomLeading:
-            constraints.append(decoration.leadingAnchor.constraint(equalTo: leadingAnchor, constant: offset.x))
+            constraints.append(decoration.leadingAnchor.constraint(equalTo: leadingAnchor, constant: offset.x)
+                .named("\(source).leading"))
         case .trailing, .topTrailing, .bottomTrailing:
-            constraints.append(decoration.trailingAnchor.constraint(equalTo: trailingAnchor, constant: offset.x))
+            constraints.append(decoration.trailingAnchor.constraint(equalTo: trailingAnchor, constant: offset.x)
+                .named("\(source).trailing"))
         case .center, .top, .bottom:
-            constraints.append(decoration.centerXAnchor.constraint(equalTo: centerXAnchor, constant: offset.x))
+            constraints.append(decoration.centerXAnchor.constraint(equalTo: centerXAnchor, constant: offset.x)
+                .named("\(source).centerX"))
         }
         switch alignment {
         case .fill:
             constraints += [
-                decoration.topAnchor.constraint(equalTo: topAnchor),
-                decoration.bottomAnchor.constraint(equalTo: bottomAnchor)
+                decoration.topAnchor.constraint(equalTo: topAnchor).named("\(source).top"),
+                decoration.bottomAnchor.constraint(equalTo: bottomAnchor).named("\(source).bottom")
             ]
         case .top, .topLeading, .topTrailing:
-            constraints.append(decoration.topAnchor.constraint(equalTo: topAnchor, constant: offset.y))
+            constraints.append(decoration.topAnchor.constraint(equalTo: topAnchor, constant: offset.y)
+                .named("\(source).top"))
         case .bottom, .bottomLeading, .bottomTrailing:
-            constraints.append(decoration.bottomAnchor.constraint(equalTo: bottomAnchor, constant: offset.y))
+            constraints.append(decoration.bottomAnchor.constraint(equalTo: bottomAnchor, constant: offset.y)
+                .named("\(source).bottom"))
         case .center, .leading, .trailing:
-            constraints.append(decoration.centerYAnchor.constraint(equalTo: centerYAnchor, constant: offset.y))
+            constraints.append(decoration.centerYAnchor.constraint(equalTo: centerYAnchor, constant: offset.y)
+                .named("\(source).centerY"))
         }
         NSLayoutConstraint.activate(constraints)
 

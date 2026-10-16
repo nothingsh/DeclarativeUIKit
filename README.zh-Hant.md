@@ -44,6 +44,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [鍵盤](#鍵盤)
   - [清單](#清單)
   - [Xcode 預覽](#xcode-預覽)
+  - [除錯版面](#除錯版面)
 - [資料繫結](#資料繫結)
 - [範例 App](#範例-app)
   - [個人資料卡片](#個人資料卡片)
@@ -422,6 +423,18 @@ Xcode 15 以上版本可以直接預覽 UIKit 視圖。UIKit 的 `#Preview` 巨�
     .padding(16)
 }
 ```
+
+### 除錯版面
+
+函式庫建立的每一條約束都以 `DeclarativeUIKit.` 加上建立它的 modifier 命名，例如 `addContent.top`、`frame.width`、`overlay.centerY`、`spacer.minLength` 或 `fillsViewport`。約束衝突時，主控台會顯示這些名稱，由此可以知道該修改哪個 modifier：
+
+```text
+Unable to simultaneously satisfy constraints.
+    <NSLayoutConstraint:0x600002b0c3c0 'DeclarativeUIKit.frame.width' UIView:0x10310a2c0.width == 40   (active)>
+    <NSLayoutConstraint:0x600002b0c460 'DeclarativeUIKit.addContent.leading' H:|-(0)-[UIView:0x10310a2c0]   (active, names: '|':UIView:0x10310a100 )>
+```
+
+UIKit 本身的工具照常可用：Xcode 的 View Debugger 顯示視圖階層與每個視圖的約束，`hasAmbiguousLayout` 與 `exerciseAmbiguityInLayout()` 可以找出尺寸或位置沒有完全確定的視圖。
 
 ## 資料繫結
 

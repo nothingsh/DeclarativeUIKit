@@ -46,8 +46,8 @@ public final class Spacer: UIView {
             return
         }
 
-        let identifier = "DeclarativeUIKit.spacer.minLength"
-        constraints.first { $0.identifier == identifier }?.isActive = false
+        let name = "spacer.minLength"
+        constraints.first { $0.identifier == "DeclarativeUIKit.\(name)" }?.isActive = false
 
         let axis = stack.axis
         let crossAxis: NSLayoutConstraint.Axis = axis == .horizontal ? .vertical : .horizontal
@@ -55,15 +55,13 @@ public final class Spacer: UIView {
         setContentHuggingPriority(.defaultLow, for: crossAxis)
 
         translatesAutoresizingMaskIntoConstraints = false
-        let minimum = length(axis).constraint(greaterThanOrEqualToConstant: minLength)
-        minimum.identifier = identifier
-        minimum.isActive = true
+        length(axis).constraint(greaterThanOrEqualToConstant: minLength).named(name).isActive = true
 
         // Below the default hugging of views with content, so sharing the extra space
         // equally never stretches them. Tied to every other spacer, so the rest go on
         // sharing equally when one of them leaves the stack.
         for case let other as Spacer in stack.subviews where other !== self {
-            let equal = length(axis).constraint(equalTo: other.length(axis))
+            let equal = length(axis).constraint(equalTo: other.length(axis)).named("spacer.equalLength")
             equal.priority = .defaultLow - 1
             equal.isActive = true
         }

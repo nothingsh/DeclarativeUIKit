@@ -49,13 +49,13 @@ extension UIScrollView {
         addSubview(stack)
         stack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: contentLayoutGuide.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: contentLayoutGuide.trailingAnchor),
-            stack.topAnchor.constraint(equalTo: contentLayoutGuide.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: contentLayoutGuide.bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: contentLayoutGuide.leadingAnchor).named("scrollContent.leading"),
+            stack.trailingAnchor.constraint(equalTo: contentLayoutGuide.trailingAnchor).named("scrollContent.trailing"),
+            stack.topAnchor.constraint(equalTo: contentLayoutGuide.topAnchor).named("scrollContent.top"),
+            stack.bottomAnchor.constraint(equalTo: contentLayoutGuide.bottomAnchor).named("scrollContent.bottom"),
             axis == .vertical
-                ? stack.widthAnchor.constraint(equalTo: frameLayoutGuide.widthAnchor)
-                : stack.heightAnchor.constraint(equalTo: frameLayoutGuide.heightAnchor)
+                ? stack.widthAnchor.constraint(equalTo: frameLayoutGuide.widthAnchor).named("scrollContent.width")
+                : stack.heightAnchor.constraint(equalTo: frameLayoutGuide.heightAnchor).named("scrollContent.height")
         ])
     }
 }

@@ -54,9 +54,9 @@ extension UITextView {
         let label = PlaceholderLabel()
         addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.top = label.topAnchor.constraint(equalTo: topAnchor)
-        label.leading = label.leadingAnchor.constraint(equalTo: frameLayoutGuide.leadingAnchor)
-        label.trailing = label.trailingAnchor.constraint(equalTo: frameLayoutGuide.trailingAnchor)
+        label.top = label.topAnchor.constraint(equalTo: topAnchor).named("placeholder.top")
+        label.leading = label.leadingAnchor.constraint(equalTo: frameLayoutGuide.leadingAnchor).named("placeholder.leading")
+        label.trailing = label.trailingAnchor.constraint(equalTo: frameLayoutGuide.trailingAnchor).named("placeholder.trailing")
         NSLayoutConstraint.activate([label.top, label.leading, label.trailing])
         NotificationCenter.default.addObserver(
             label,
