@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `overlay` on a scroll view, such as `VScroll`, `HScroll`, `VList` or `UITextView`, stays over the visible area instead of being placed on the scrolled content.
+- `avoidsKeyboard` removes the room it made for the keyboard when the scroll view has left its window before the keyboard hides.
+- `onReachEnd` runs for the last row when the last sections of a `VList` are empty.
+
 ## [0.9.0] - 2026-10-16
 
 ### Added

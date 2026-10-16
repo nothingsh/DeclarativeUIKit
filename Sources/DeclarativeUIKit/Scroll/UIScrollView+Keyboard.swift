@@ -46,11 +46,13 @@ final class KeyboardAvoidance: NSObject {
     }
 
     @objc private func keyboardWillChangeFrame(_ notification: Notification) {
-        guard let scrollView, let screen = scrollView.window?.screen,
+        guard let scrollView,
               let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
         else { return }
+        // A scroll view outside a window is covered by nothing, so leaving the window while
+        // the keyboard is up does not keep the room made for it.
         var covered: CGFloat = 0
-        if frame.maxY >= screen.bounds.maxY {
+        if let screen = scrollView.window?.screen, frame.maxY >= screen.bounds.maxY {
             let keyboard = screen.coordinateSpace.convert(frame, to: scrollView)
             covered = min(max(scrollView.bounds.maxY - keyboard.minY, 0), scrollView.bounds.height)
             // The safe area inset UIKit adds with an automatic adjustment behavior is

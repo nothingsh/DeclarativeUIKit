@@ -37,6 +37,7 @@ public extension UILabel {
     }
 }
 
+@MainActor
 extension UILabel {
 
     private var textStyle: LabelTextStyle {

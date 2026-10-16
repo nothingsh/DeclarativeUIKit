@@ -45,6 +45,7 @@ final class PlaceholderLabel: UILabel {
     }
 }
 
+@MainActor
 extension UITextView {
 
     private var placeholderLabel: PlaceholderLabel {

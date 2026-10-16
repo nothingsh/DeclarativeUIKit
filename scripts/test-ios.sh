@@ -3,7 +3,10 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+# The iOS SDK needs Xcode; fall back to it when only the Command Line Tools are selected.
+if [[ -z "${DEVELOPER_DIR:-}" && "$(xcode-select -p 2>/dev/null)" == *CommandLineTools* ]]; then
+    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
 
 if [[ -z "${IOS_SIMULATOR_ID:-}" ]]; then
     echo "Set IOS_SIMULATOR_ID to an installed iOS Simulator UDID."

@@ -22,7 +22,8 @@ public enum LayoutAlignment: Sendable {
 extension UIView {
 
     /// Adds `decoration` as a subview behind or in front of the existing subviews and
-    /// constrains it to this view according to `alignment`.
+    /// constrains it to this view according to `alignment`. In a scroll view it is
+    /// constrained to the visible frame, not to the scrolled content.
     ///
     /// A `fill` decoration gets the lowest hugging and compression resistance, so its own
     /// intrinsic size cannot enlarge this view.
@@ -56,6 +57,15 @@ extension UIView {
             addSubview(decoration)
         }
         decoration.translatesAutoresizingMaskIntoConstraints = false
+
+        // Constraints to a scroll view's own edges attach to its content.
+        let frame = (self as? UIScrollView)?.frameLayoutGuide
+        let leadingAnchor = frame?.leadingAnchor ?? self.leadingAnchor
+        let trailingAnchor = frame?.trailingAnchor ?? self.trailingAnchor
+        let topAnchor = frame?.topAnchor ?? self.topAnchor
+        let bottomAnchor = frame?.bottomAnchor ?? self.bottomAnchor
+        let centerXAnchor = frame?.centerXAnchor ?? self.centerXAnchor
+        let centerYAnchor = frame?.centerYAnchor ?? self.centerYAnchor
 
         let source = behind ? "background" : "overlay"
         var constraints: [NSLayoutConstraint] = []

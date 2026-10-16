@@ -9,7 +9,9 @@ public extension UIView {
     /// A later call puts its overlay further front; subviews added afterwards, such as a
     /// later arranged subview, also go in front of it. With `.fill`, the overlay's hugging
     /// and compression resistance are lowered so that its intrinsic size cannot enlarge this
-    /// view; an overlay whose own subviews require a minimum size still can.
+    /// view; an overlay whose own subviews require a minimum size still can. On a scroll
+    /// view, such as `VScroll` or `VList`, the overlay stays over the visible area and does
+    /// not scroll with the content.
     ///
     /// `offset` moves the overlay from where `alignment` puts it: x is positive toward the
     /// right and y toward the bottom. It is passed to Auto Layout as it is: in a

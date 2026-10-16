@@ -44,7 +44,8 @@ struct ListID: Hashable, @unchecked Sendable {
 /// rows by `id`, and refreshes the rows whose id is in both the old and the new data.
 /// Ids must be unique across the whole list.
 ///
-/// The list owns its `delegate` to handle selection; replacing it stops `onSelect`.
+/// The list owns its `delegate` to handle selection; replacing it stops `onSelect` and
+/// `onReachEnd`, and rows without an action highlight again.
 /// Like ``VScroll``, it ignores the safe area by itself; mount it with
 /// `addContent(_:safeArea:)` to keep it inside. The list keeps the `row` closure, so
 /// capture a view controller weakly in it.
@@ -312,9 +313,12 @@ private final class ListDelegate: NSObject, UICollectionViewDelegate {
         willDisplay cell: UICollectionViewCell,
         forItemAt indexPath: IndexPath
     ) {
-        let lastSection = collectionView.numberOfSections - 1
+        // The last row may be in an earlier section when the last sections are empty.
+        let lastSection = (0..<collectionView.numberOfSections).last {
+            collectionView.numberOfItems(inSection: $0) > 0
+        }
         if indexPath.section == lastSection,
-           indexPath.item == collectionView.numberOfItems(inSection: lastSection) - 1 {
+           indexPath.item == collectionView.numberOfItems(inSection: indexPath.section) - 1 {
             onReachEnd?()
         }
     }

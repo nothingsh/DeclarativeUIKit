@@ -77,6 +77,18 @@ final class KeyboardTests: XCTestCase {
         field.resignFirstResponder()
     }
 
+    func testLeavingTheWindowDoesNotKeepTheInset() {
+        let host = LayoutTestHost(size: screen.size)
+        let scroll = VScroll { UIView().frame(height: 2000) }.avoidsKeyboard(true)
+        host.rootView.addContent(scroll)
+        host.layout()
+        keyboardWillMove(to: docked(height: 300))
+
+        scroll.removeFromSuperview()
+        keyboardWillMove(to: CGRect(x: 0, y: screen.maxY, width: screen.width, height: 300))
+        XCTAssertEqual(scroll.contentInset.bottom, 0)
+    }
+
     func testTurningOffRemovesTheInsetAndStopsFollowing() {
         let host = LayoutTestHost(size: screen.size)
         let scroll = VScroll { UIView().frame(height: 2000) }.avoidsKeyboard(true)
