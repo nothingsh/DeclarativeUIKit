@@ -350,16 +350,6 @@ For AppKit, see the sibling package [DeclarativeAppKit](https://github.com/nothi
 
 Changes are listed in [CHANGELOG.md](CHANGELOG.md). Versions follow [Semantic Versioning](https://semver.org/). From 1.0, minor versions only add API, a renamed API stays available as deprecated until the next major version, and the minimum iOS version rises only with a major version. Before 1.0, a minor version may change the API, and the changelog shows how to migrate.
 
-## Development
-
-The tests use UIKit, so they run in an iOS Simulator rather than with `swift test`:
-
-```sh
-IOS_SIMULATOR_ID=<simulator UDID> scripts/test-ios.sh
-```
-
-Find a UDID with `xcrun simctl list devices available`.
-
 ## License
 
 [MIT](LICENSE), Copyright (c) 2026 Wynn.

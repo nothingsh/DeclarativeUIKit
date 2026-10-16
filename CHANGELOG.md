@@ -11,6 +11,8 @@ All notable changes to this project are documented here. The format follows
 - `overlay` on a scroll view, such as `VScroll`, `HScroll`, `VList` or `UITextView`, stays over the visible area instead of being placed on the scrolled content.
 - `avoidsKeyboard` removes the room it made for the keyboard when the scroll view has left its window before the keyboard hides.
 - `onReachEnd` runs for the last row when the last sections of a `VList` are empty.
+- In a right-to-left layout, `HScroll` starts at its first element and keeps its place when the content or the scroll view changes width.
+- The `UITextView` placeholder lines up with the text in a right-to-left layout, where `textContainerInset` does not flip.
 
 ## [0.9.0] - 2026-10-16
 
