@@ -53,6 +53,10 @@ final class KeyboardAvoidance: NSObject {
         if frame.maxY >= screen.bounds.maxY {
             let keyboard = screen.coordinateSpace.convert(frame, to: scrollView)
             covered = min(max(scrollView.bounds.maxY - keyboard.minY, 0), scrollView.bounds.height)
+            // The safe area inset UIKit adds with an automatic adjustment behavior is
+            // already room under the content; count only the rest.
+            let safeAreaInset = scrollView.adjustedContentInset.bottom - scrollView.contentInset.bottom
+            covered = max(covered - safeAreaInset, 0)
         }
         animate(alongside: notification) {
             self.setAddedInset(covered)

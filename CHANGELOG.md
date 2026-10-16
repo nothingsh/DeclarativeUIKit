@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `Divider`, a hairline across the stack it is in.
+- `GradientView`, a view that draws a linear gradient.
+- `cornerRadius(_:corners:curve:)`, which rounds only the given corners.
+- `accessibilityCombined()`, which makes VoiceOver read a view and its descendants as one element.
+
+### Changed
+
+- The colors of `border` and `shadow` follow changes between light and dark mode, instead of being resolved once.
+- `fillsViewport` counts only the length inside `adjustedContentInset`, so content can scroll under a translucent navigation bar and still fill exactly one screen, and a bottom element pushed down by a `Spacer` stays above the keyboard with `avoidsKeyboard`.
+- `avoidsKeyboard` no longer counts the bottom safe area twice when UIKit already insets the content by it.
+- `VStack` and `HStack` arrange their elements inside zero layout margins from the start; padding still only changes those margins.
+
 ## [0.7.0] - 2026-10-16
 
 ### Added

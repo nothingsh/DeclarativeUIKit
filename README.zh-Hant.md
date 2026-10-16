@@ -142,7 +142,7 @@ let avatar = UIImageView()
 
 | 型別 | Modifier |
 | --- | --- |
-| `UIView` 及其任何子類別 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityHint`、`accessibilityTraits`、`isAccessibilityElement`、`accessibilityIdentifier`、`cornerRadius`、`border(color:width:)`、`shadow` |
+| `UIView` 及其任何子類別 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityHint`、`accessibilityTraits`、`isAccessibilityElement`、`accessibilityIdentifier`、`cornerRadius`、`cornerRadius(_:corners:)`、`border(color:width:)`、`shadow`、`accessibilityCombined` |
 | `UILabel` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`lineHeight`、`kerning`、`textColor`、`numberOfLines`、`textAlignment`、`lineBreakMode`、`adjustsFontSizeToFitWidth`、`minimumScaleFactor` |
 | `UIImageView` | `image`、`highlightedImage`、`preferredSymbolConfiguration` |
 | `UIControl` 及其任何子類別 | `isEnabled`、`isSelected`、`isHighlighted` |
@@ -166,7 +166,9 @@ let avatar = UIImageView()
 
 `UITextView` 本身沒有 placeholder。`placeholder` 與 `attributedPlaceholder` 在文字視圖為空時，於文字起始處顯示一行預留位置文字，顏色預設為 placeholder 顏色，帶屬性的形式則依它自己的屬性。輸入時它會自動隱藏與顯示；`text`、`attributedText`、`font`、`textAlignment`、`textContainerInset` modifier 會同步更新它，直接指派 `textView.text = …` 不會。
 
-`cornerRadius`、`border` 與 `shadow` 設定視圖的 layer。`cornerRadius` 不會裁切：需要時加上 `clipsToBounds(true)`，但它也會裁掉陰影。layer 接收的是 `CGColor`，因此邊框與陰影顏色只在呼叫時解析一次，之後切換淺色與深色模式時不會跟著改變。
+`cornerRadius`、`border` 與 `shadow` 設定視圖的 layer。`cornerRadius` 不會裁切：需要時加上 `clipsToBounds(true)`，但它也會裁掉陰影。`corners` 只圓指定的角，以實體方向命名，例如左上角 `.layerMinXMinYCorner`，因此不會隨由右至左的語言鏡像。邊框與陰影顏色會隨淺色、深色模式切換：視圖會多一個隱藏的子視圖，在外觀改變時重新解析顏色。直接指派 `layer.borderColor` 則不會跟隨。
+
+`accessibilityCombined()` 讓 VoiceOver 把一個視圖及其子視圖讀成一個元素，標籤由可見子視圖的標籤依序連接而成，並隨之變化。只合併標籤，所以不要用在含有按鈕等控制項的區域。
 
 ### 事件
 
@@ -229,6 +231,7 @@ let avatar = UIImageView()
 ```
 
 - `background(_:)` 設定視圖本身的 `backgroundColor`，stack 也會繪製它。`background { ... }` 則是在 stack 後面放一個完整的視圖。
+- `GradientView([.systemTeal, .systemBlue])` 繪製線性漸層，預設由上到下；搭配 `background { … }` 使用。點使用單位座標，與 `CAGradientLayer` 相同，顏色隨深色模式變化。
 - 視圖形式的裝飾是以約束固定的子視圖；不會插入容器視圖，也沒有 `ZStack`。`alignment` 預設為 `.fill`，也可以是 `.topTrailing` 這樣的位置。
 - 被裝飾視圖本身的內容決定其尺寸。
 - `offset` 把裝飾從 `alignment` 決定的位置移開：x 正值朝右，y 正值朝下。這個值原樣交給 Auto Layout：在由右至左的版面中，leading 或 trailing 對齊的水平方向會反過來，置中的對齊則不會；如果不希望這樣，請自行調整傳入的值。`.fill` 不接受 offset。
@@ -244,6 +247,17 @@ let header = HStack {
 ```
 
 `Spacer` 沿所在 stack 的軸佔據剩餘長度，多個 spacer 平分它。`contentHuggingPriority(_:for:)` 與 `compressionResistancePriority(_:for:)` 決定其他視圖中哪一個先變大或先縮小。
+
+`Divider()` 是橫跨所在 stack 的細線：在 `VStack` 中為橫線，在 `HStack` 中為直線。無論對齊方式為何，它都在 padding 之內鋪滿 stack，顏色為 `.separator`，可用 `background(_:)` 修改。
+
+```swift
+VStack(alignment: .leading, spacing: 12) {
+    header
+    Divider()
+    body
+}
+.padding(16)
+```
 
 ### 捲動視圖
 
@@ -272,6 +286,15 @@ view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
     submit
 }
 .fillsViewport(true)
+```
+
+- 要讓內容捲到半透明導覽列下方，只在左右兩側把捲動視圖約束到安全區域，由 UIKit 依導覽列等設定內容的 inset。內容從導覽列下方開始，捲到導覽列下方時導覽列會顯示背景。`fillsViewport` 與 `avoidsKeyboard` 會考慮這些 inset：
+
+```swift
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .horizontal) {
+    form
+}
+.contentInsetAdjustmentBehavior(.automatic)
 ```
 
 ### 鍵盤
@@ -427,7 +450,7 @@ view.addVStack(alignment: .fill, spacing: 12) {
 
 ### 個人資料卡片
 
-程式碼的結構與畫面的結構一致。狀態徽章透過 `overlay` 附加到大頭貼上，不需要包裝視圖，也不需要 `ZStack`。`bio` 與 `status` 都是一般屬性：按鈕直接修改它們，Auto Layout 會調整卡片的大小。不會重建任何視圖。
+程式碼的結構與畫面的結構一致。狀態徽章透過 `overlay` 附加到大頭貼上，不需要包裝視圖，也不需要 `ZStack`。`bio` 與 `status` 都是一般屬性：按鈕直接修改它們，Auto Layout 會調整卡片的大小。不會重建任何視圖。`Divider` 分隔標頭與簡介，`accessibilityCombined` 讓 VoiceOver 把姓名與職業讀成一個元素。
 
 <table>
 <tr>
@@ -452,6 +475,8 @@ VStack(alignment: .leading, spacing: 12) {
         }
         Spacer()
     }
+    .accessibilityCombined()
+    Divider()
     bio
 }
 .card()
@@ -477,7 +502,7 @@ extension UIStackView {
             .background {
                 UIView()
                     .background(.secondarySystemGroupedBackground)
-                    .configure { $0.layer.cornerRadius = 12 }
+                    .cornerRadius(12)
             }
     }
 }
@@ -632,7 +657,7 @@ private func toggleRead(_ id: Int) {
 
 所有文字都使用 `font(textStyle:)`，因此各畫面會跟隨動態字體，並能適應旋轉。內容閉包只執行一次；之後的變化透過視圖本身完成，而不是透過資料繫結。
 
-每個畫面都以 `safeArea: .all` 掛載其捲動視圖，因此內容會避開導覽列、主畫面指示條以及橫向時的感測器區域，而畫面的背景顏色仍然鋪滿整個螢幕。
+每個畫面只在左右兩側把捲動視圖約束到安全區域，由 UIKit 依導覽列與主畫面指示條設定內容的 inset。內容從導覽列下方開始並能捲到它下方，橫向時避開感測器區域，畫面的背景顏色仍然鋪滿整個螢幕。
 
 範例 App 的部署目標是 iOS 15.0，與本 package 相同。
 

@@ -12,7 +12,7 @@ extension UIStackView {
             .background {
                 UIView()
                     .background(.secondarySystemGroupedBackground)
-                    .configure { $0.layer.cornerRadius = 12 }
+                    .cornerRadius(12)
             }
     }
 }
@@ -36,14 +36,16 @@ func note(_ text: String) -> UILabel {
 
 /// The root of every screen: a vertical scroll view with fixed padding.
 ///
-/// The scroll view is mounted inside the safe area, clear of the navigation bar, the home
-/// indicator and the sensor housing, while the view's background color fills the display.
+/// The scroll view fills the display from top to bottom and stays inside the safe area at
+/// the sides, clear of the sensor housing. UIKit insets the content by the navigation bar
+/// and the home indicator, so the content starts below the bar and scrolls under it.
 extension UIViewController {
 
     @discardableResult
     func addScreen(spacing: CGFloat = 16, @UIViewBuilder content: () -> [UIView]) -> VScroll {
         view.background(.systemGroupedBackground)
-        return view.addVScroll(alignment: .fill, spacing: spacing, safeArea: .all, content: content)
+        return view.addVScroll(alignment: .fill, spacing: spacing, safeArea: .horizontal, content: content)
+            .contentInsetAdjustmentBehavior(.automatic)
             .padding(16)
     }
 }

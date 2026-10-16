@@ -17,6 +17,11 @@ public final class VStack: UIStackView {
         @UIViewBuilder content: () -> [UIView]
     ) {
         super.init(frame: .zero)
+        // Arrange inside zero margins, so padding only changes the margins and a Divider
+        // can always span the margins guide.
+        directionalLayoutMargins = .zero
+        insetsLayoutMarginsFromSafeArea = false
+        isLayoutMarginsRelativeArrangement = true
         axis = .vertical
         self.alignment = alignment.stackAlignment
         self.spacing = spacing

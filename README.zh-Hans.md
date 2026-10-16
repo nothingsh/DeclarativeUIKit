@@ -142,7 +142,7 @@ let avatar = UIImageView()
 
 | 类型 | Modifier |
 | --- | --- |
-| `UIView` 及其任何子类 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityHint`、`accessibilityTraits`、`isAccessibilityElement`、`accessibilityIdentifier`、`cornerRadius`、`border(color:width:)`、`shadow` |
+| `UIView` 及其任何子类 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityHint`、`accessibilityTraits`、`isAccessibilityElement`、`accessibilityIdentifier`、`cornerRadius`、`cornerRadius(_:corners:)`、`border(color:width:)`、`shadow`、`accessibilityCombined` |
 | `UILabel` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`lineHeight`、`kerning`、`textColor`、`numberOfLines`、`textAlignment`、`lineBreakMode`、`adjustsFontSizeToFitWidth`、`minimumScaleFactor` |
 | `UIImageView` | `image`、`highlightedImage`、`preferredSymbolConfiguration` |
 | `UIControl` 及其任何子类 | `isEnabled`、`isSelected`、`isHighlighted` |
@@ -166,7 +166,9 @@ let avatar = UIImageView()
 
 `UITextView` 本身没有 placeholder。`placeholder` 和 `attributedPlaceholder` 在文本视图为空时，在文字开始的位置显示一行占位文字，颜色默认为占位符颜色，带属性的形式则按它自己的属性。输入时它会自动隐藏和显示；`text`、`attributedText`、`font`、`textAlignment`、`textContainerInset` modifier 会同步更新它，直接赋值 `textView.text = …` 不会。
 
-`cornerRadius`、`border` 与 `shadow` 设置视图的 layer。`cornerRadius` 不会裁剪：需要时加上 `clipsToBounds(true)`，但它也会裁掉阴影。layer 接收的是 `CGColor`，因此边框和阴影颜色只在调用时解析一次，之后切换浅色与深色模式时不会跟着变化。
+`cornerRadius`、`border` 与 `shadow` 设置视图的 layer。`cornerRadius` 不会裁剪：需要时加上 `clipsToBounds(true)`，但它也会裁掉阴影。`corners` 只圆指定的角，按物理方向命名，例如左上角 `.layerMinXMinYCorner`，因此不会随从右到左的语言镜像。边框与阴影颜色会随浅色、深色模式切换：视图会多一个隐藏的子视图，在外观变化时重新解析颜色。直接给 `layer.borderColor` 赋值则不会跟随。
+
+`accessibilityCombined()` 让 VoiceOver 把一个视图及其子视图读成一个元素，标签由可见子视图的标签依次连接而成，并随它们变化。只合并标签，所以不要用在含有按钮等控件的区域。
 
 ### 事件
 
@@ -229,6 +231,7 @@ let avatar = UIImageView()
 ```
 
 - `background(_:)` 设置视图自身的 `backgroundColor`，stack 也会绘制它。`background { ... }` 则是在 stack 后面放一个完整的视图。
+- `GradientView([.systemTeal, .systemBlue])` 绘制线性渐变，默认从上到下；配合 `background { … }` 使用。点使用单位坐标，与 `CAGradientLayer` 相同，颜色随深色模式变化。
 - 视图形式的装饰是用约束固定的子视图；不会插入容器视图，也没有 `ZStack`。`alignment` 默认为 `.fill`，也可以是 `.topTrailing` 这样的位置。
 - 被装饰视图自身的内容决定其尺寸。
 - `offset` 把装饰从 `alignment` 确定的位置移开：x 正值朝右，y 正值朝下。这个值原样交给 Auto Layout：在从右到左的布局中，leading 或 trailing 对齐的水平方向会反过来，居中的对齐则不会；如果不希望这样，请自行调整传入的值。`.fill` 不接受 offset。
@@ -244,6 +247,17 @@ let header = HStack {
 ```
 
 `Spacer` 沿所在 stack 的轴占据剩余长度，多个 spacer 平分它。`contentHuggingPriority(_:for:)` 与 `compressionResistancePriority(_:for:)` 决定其他视图中哪一个先变大或先收缩。
+
+`Divider()` 是横穿所在 stack 的细线：在 `VStack` 中为横线，在 `HStack` 中为竖线。无论对齐方式如何，它都在 padding 之内铺满 stack，颜色为 `.separator`，可用 `background(_:)` 修改。
+
+```swift
+VStack(alignment: .leading, spacing: 12) {
+    header
+    Divider()
+    body
+}
+.padding(16)
+```
 
 ### 滚动视图
 
@@ -272,6 +286,15 @@ view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
     submit
 }
 .fillsViewport(true)
+```
+
+- 要让内容滚到半透明导航栏下面，只在左右两边把滚动视图约束到安全区，由 UIKit 按导航栏等设置内容的 inset。内容从导航栏下方开始，滚到导航栏下面时导航栏会显示背景。`fillsViewport` 与 `avoidsKeyboard` 会考虑这些 inset：
+
+```swift
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .horizontal) {
+    form
+}
+.contentInsetAdjustmentBehavior(.automatic)
 ```
 
 ### 键盘
@@ -427,7 +450,7 @@ view.addVStack(alignment: .fill, spacing: 12) {
 
 ### 个人资料卡片
 
-代码的结构与界面的结构一致。状态徽标通过 `overlay` 附加到头像上，不需要包装视图，也不需要 `ZStack`。`bio` 和 `status` 都是普通属性：按钮直接修改它们，Auto Layout 会调整卡片的大小。不会重建任何视图。
+代码的结构与界面的结构一致。状态徽标通过 `overlay` 附加到头像上，不需要包装视图，也不需要 `ZStack`。`bio` 和 `status` 都是普通属性：按钮直接修改它们，Auto Layout 会调整卡片的大小。不会重建任何视图。`Divider` 分隔头部与简介，`accessibilityCombined` 让 VoiceOver 把姓名和职业读成一个元素。
 
 <table>
 <tr>
@@ -452,6 +475,8 @@ VStack(alignment: .leading, spacing: 12) {
         }
         Spacer()
     }
+    .accessibilityCombined()
+    Divider()
     bio
 }
 .card()
@@ -477,7 +502,7 @@ extension UIStackView {
             .background {
                 UIView()
                     .background(.secondarySystemGroupedBackground)
-                    .configure { $0.layer.cornerRadius = 12 }
+                    .cornerRadius(12)
             }
     }
 }
@@ -632,7 +657,7 @@ private func toggleRead(_ id: Int) {
 
 所有文字都使用 `font(textStyle:)`，因此各页面会跟随动态字体，并能适应旋转。内容闭包只运行一次；之后的变化通过视图本身完成，而不是通过数据绑定。
 
-每个页面都用 `safeArea: .all` 挂载其滚动视图，因此内容会避开导航栏、主屏幕指示条以及横屏时的传感器区域，而页面的背景色仍然铺满整个屏幕。
+每个页面只在左右两边把滚动视图约束到安全区，由 UIKit 按导航栏和主屏幕指示条设置内容的 inset。内容从导航栏下方开始并能滚到它下面，横屏时避开传感器区域，页面的背景色仍然铺满整个屏幕。
 
 示例应用的部署目标是 iOS 15.0，与本 package 相同。
 

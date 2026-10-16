@@ -1,7 +1,8 @@
 import DeclarativeUIKit
 import UIKit
 
-/// A profile card built from stacks, with a status badge placed by `overlay`.
+/// A profile card built from stacks, with a status badge placed by `overlay` and a
+/// `Divider` between the header and the bio.
 ///
 /// The content closures run once. Later changes go through the references kept
 /// here, and Auto Layout resizes the card; nothing is re-rendered or bound.
@@ -23,11 +24,8 @@ final class ProfileExampleViewController: UIViewController {
     private let status = UIView()
         .background(.systemGreen)
         .frame(width: 16, height: 16)
-        .configure {
-            $0.layer.cornerRadius = 8
-            $0.layer.borderWidth = 2
-            $0.layer.borderColor = UIColor.secondarySystemGroupedBackground.cgColor
-        }
+        .cornerRadius(8)
+        .border(color: .secondarySystemGroupedBackground, width: 2)   // follows dark mode
 
     private let bioButton = UIButton(type: .system)
         .title("Show long bio")
@@ -64,6 +62,8 @@ final class ProfileExampleViewController: UIViewController {
                     }
                     Spacer()
                 }
+                .accessibilityCombined()   // VoiceOver reads the name and role as one element
+                Divider()
                 bio
             }
             .card()
