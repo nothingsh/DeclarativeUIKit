@@ -6,12 +6,14 @@ public extension UITextView {
     @discardableResult
     func text(_ value: String?) -> Self {
         self.text = value
+        updatePlaceholder()
         return self
     }
 
     @discardableResult
     func attributedText(_ value: NSAttributedString?) -> Self {
         self.attributedText = value
+        updatePlaceholder()
         return self
     }
 
@@ -20,6 +22,7 @@ public extension UITextView {
     @discardableResult
     func font(_ value: UIFont?) -> Self {
         self.font = value
+        updatePlaceholder()
         return self
     }
 
@@ -29,6 +32,7 @@ public extension UITextView {
     func font(textStyle: UIFont.TextStyle) -> Self {
         self.font = UIFont.preferredFont(forTextStyle: textStyle)
         self.adjustsFontForContentSizeCategory = true
+        updatePlaceholder()
         return self
     }
 
@@ -39,6 +43,15 @@ public extension UITextView {
     func font(_ value: UIFont, relativeTo textStyle: UIFont.TextStyle) -> Self {
         self.font = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: value)
         self.adjustsFontForContentSizeCategory = true
+        updatePlaceholder()
+        return self
+    }
+
+    /// Sets the space around the text. The placeholder moves with the text.
+    @discardableResult
+    func textContainerInset(_ value: UIEdgeInsets) -> Self {
+        self.textContainerInset = value
+        updatePlaceholder()
         return self
     }
 
@@ -51,6 +64,7 @@ public extension UITextView {
     @discardableResult
     func textAlignment(_ value: NSTextAlignment) -> Self {
         self.textAlignment = value
+        updatePlaceholder()
         return self
     }
 
@@ -69,6 +83,26 @@ public extension UITextView {
     @discardableResult
     func isSecureTextEntry(_ value: Bool) -> Self {
         self.isSecureTextEntry = value
+        return self
+    }
+
+    @discardableResult
+    func autocapitalizationType(_ value: UITextAutocapitalizationType) -> Self {
+        self.autocapitalizationType = value
+        return self
+    }
+
+    @discardableResult
+    func autocorrectionType(_ value: UITextAutocorrectionType) -> Self {
+        self.autocorrectionType = value
+        return self
+    }
+
+    /// Tells the keyboard what the text is, so it can suggest it or fill it in, such as
+    /// an email address, a password or a one-time code.
+    @discardableResult
+    func textContentType(_ value: UITextContentType?) -> Self {
+        self.textContentType = value
         return self
     }
 

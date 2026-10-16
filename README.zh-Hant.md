@@ -41,6 +41,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background 與 overlay](#background-與-overlay)
   - [Spacer](#spacer)
   - [捲動視圖](#捲動視圖)
+  - [鍵盤](#鍵盤)
   - [清單](#清單)
   - [Xcode 預覽](#xcode-預覽)
 - [資料繫結](#資料繫結)
@@ -154,14 +155,16 @@ let avatar = UIImageView()
 | `UIPageControl` | `numberOfPages`、`currentPage`、`hidesForSinglePage`、`pageIndicatorTintColor`、`currentPageIndicatorTintColor` |
 | `UIProgressView` | `progress(_:animated:)`、`progressTintColor`、`trackTintColor` |
 | `UIActivityIndicatorView` | `isAnimating`、`hidesWhenStopped`、`color` |
-| `UITextField` | `text`、`attributedText`、`placeholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry` |
-| `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
+| `UITextField` | `text`、`attributedText`、`placeholder`、`attributedPlaceholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`borderStyle`、`clearButtonMode`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`autocapitalizationType`、`autocorrectionType`、`textContentType` |
+| `UITextView` | `text`、`attributedText`、`placeholder`、`attributedPlaceholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`textContainerInset`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`autocapitalizationType`、`autocorrectionType`、`textContentType`、`isEditable`、`isSelectable`、`isScrollEnabled` |
 
 `font(textStyle:)` 跟隨 Dynamic Type，`font(_:)` 則設定固定字型。`font(_:relativeTo:)` 讓自訂字型像該文字樣式的系統字型一樣跟隨 Dynamic Type；傳入預設文字大小下應有的字級。按鈕的 modifier 為每個控制項狀態各設定一個值。`value`、`selectedSegmentIndex`、`currentPage` 這類設定值的 modifier 不會傳送 `.valueChanged`。
 
 有 configuration 的按鈕的 modifier 修改它的 `UIButton.Configuration`，所以要用 `UIButton(configuration:)` 建立按鈕；對沒有 configuration 的按鈕呼叫時會以 precondition 失敗終止。`title` 與 `image` 對兩種按鈕都有效，並且依狀態生效。有 configuration 的按鈕請用 `baseForegroundColor` 而不是 `titleColor` 設定文字顏色，用 configuration 的 `background` 而不是 `backgroundImage` 設定背景。`titleFont` 會取代 configuration 的 `titleTextAttributesTransformer`；`relativeTo:` 與 `textStyle:` 兩種形式跟隨 Dynamic Type。
 
 `lineHeight` 設定每行的高度，與設計工具中的行高相同；`kerning` 設定每個字元後的間距。`UILabel` 沒有對應的屬性，所以由 label 保存這兩個值並寫入 `attributedText`。`text`、`attributedText`、`font` modifier 會重新套用它們；直接指派 `label.text = …` 不會，所以更新文字時請用 `label.text(…)`。文字依 UIKit 的方式貼齊每行底部，而不像設計工具那樣垂直置中。行高相對於字型，所以會隨 Dynamic Type 變大。
+
+`UITextView` 本身沒有 placeholder。`placeholder` 與 `attributedPlaceholder` 在文字視圖為空時，於文字起始處顯示一行預留位置文字，顏色預設為 placeholder 顏色，帶屬性的形式則依它自己的屬性。輸入時它會自動隱藏與顯示；`text`、`attributedText`、`font`、`textAlignment`、`textContainerInset` modifier 會同步更新它，直接指派 `textView.text = …` 不會。
 
 `cornerRadius`、`border` 與 `shadow` 設定視圖的 layer。`cornerRadius` 不會裁切：需要時加上 `clipsToBounds(true)`，但它也會裁掉陰影。layer 接收的是 `CGColor`，因此邊框與陰影顏色只在呼叫時解析一次，之後切換淺色與深色模式時不會跟著改變。
 
@@ -269,6 +272,28 @@ view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 .fillsViewport(true)
 ```
+
+### 鍵盤
+
+```swift
+let email = UITextField()
+    .placeholder("Email")
+    .textContentType(.emailAddress)
+    .returnKeyType(.next)
+    .onEvent(.editingDidEndOnExit) { _ in password.becomeFirstResponder() }  // 按 return 跳到下一個輸入欄位
+
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
+    email
+    password
+    notes
+}
+.avoidsKeyboard(true)
+```
+
+- `avoidsKeyboard(true)` 適用於任何 `UIScrollView`，包括 `VScroll`、`VList` 與可捲動的 `UITextView`。鍵盤遮住捲動視圖的一部分時，被遮住的高度會加到底部的 content inset 與捲動指示器 inset，正在編輯的輸入欄位會捲到鍵盤上方。你自己設定的 inset 會保留。預設關閉。
+- 只計算被遮住的部分：底邊在鍵盤上方的捲動視圖不變，iPad 上的浮動鍵盤不算遮擋。
+- 捲動視圖之外的視圖不會移動。必須能點到的按鈕請放在捲動視圖內容的末端。
+- 按下 return 時文字欄位會傳送 `.editingDidEndOnExit`，所以用 `onEvent` 就能跳到下一個輸入欄位，不需要委派。
 
 ### 清單
 
@@ -433,7 +458,7 @@ extension UIStackView {
 
 ### 表單
 
-控制項就是一般的 `UITextField`、`UISwitch` 與 `UISlider`，以 modifier 設定並作為屬性持有。事件以 `onEvent` 閉包與文字欄位的委派處理。`Spacer` 把開關與數值推到尾端邊緣。
+控制項就是一般的 `UITextField`、`UISwitch` 與 `UISlider`，以 modifier 設定並作為屬性持有。事件以 `onEvent` 閉包處理，return 鍵跳到下一個輸入欄位。頁面以 `avoidsKeyboard` 為鍵盤留出空間，備註視圖顯示 placeholder。`Spacer` 把開關與數值推到尾端邊緣。
 
 <table>
 <tr>

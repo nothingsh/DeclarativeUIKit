@@ -48,6 +48,7 @@ final class TextInputTests: XCTestCase {
             .keyboardType(.emailAddress)
             .returnKeyType(.next)
             .isSecureTextEntry(true)
+            .textContentType(.emailAddress)
         let chainedTextView: UITextView = textView
             .text("Notes")
             .keyboardType(.asciiCapable)
@@ -61,6 +62,7 @@ final class TextInputTests: XCTestCase {
         XCTAssertEqual(field.keyboardType, .emailAddress)
         XCTAssertEqual(field.returnKeyType, .next)
         XCTAssertTrue(field.isSecureTextEntry)
+        XCTAssertEqual(field.textContentType, .emailAddress)
         XCTAssertTrue(chainedTextView === textView)
         XCTAssertEqual(textView.text, "Notes")
         XCTAssertEqual(textView.keyboardType, .asciiCapable)
@@ -124,5 +126,43 @@ final class TextInputTests: XCTestCase {
         XCTAssertGreaterThan(field.font!.pointSize, fieldSize)
         XCTAssertGreaterThan(textView.font!.pointSize, textViewSize)
         XCTAssertGreaterThan(textView.frame.height, textViewHeight)
+    }
+
+    func testPlaceholderStartsWhereTextStarts() throws {
+        let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+        let textView = UITextView()
+            .font(textStyle: .body)
+            .isScrollEnabled(false)
+            .placeholder("Notes")
+        pinTop(textView, in: host)
+        let label = try XCTUnwrap(textView.subviews.compactMap { $0 as? PlaceholderLabel }.first)
+
+        for inset in [UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0),
+                      UIEdgeInsets(top: 20, left: 24, bottom: 4, right: 12)] {
+            textView.textContainerInset(inset).text("Notes")
+            host.layout()
+            let text = textView.layoutManager
+                .boundingRect(forGlyphRange: NSRange(location: 0, length: 1), in: textView.textContainer)
+                .offsetBy(dx: inset.left, dy: inset.top)
+
+            XCTAssertEqual(label.frame.minX, text.minX, accuracy: 0.5)
+            XCTAssertEqual(label.frame.minY, text.minY, accuracy: 0.5)
+            textView.text("")
+        }
+    }
+
+    func testPlaceholderShowsOnlyWhileEmpty() throws {
+        let textView = UITextView().placeholder("Notes")
+        let label = try XCTUnwrap(textView.subviews.compactMap { $0 as? PlaceholderLabel }.first)
+        XCTAssertFalse(label.isHidden)
+
+        textView.text("Written")
+        XCTAssertTrue(label.isHidden)
+        textView.text("")
+        XCTAssertFalse(label.isHidden)
+
+        textView.text = "Typed"
+        NotificationCenter.default.post(name: UITextView.textDidChangeNotification, object: textView)
+        XCTAssertTrue(label.isHidden)
     }
 }

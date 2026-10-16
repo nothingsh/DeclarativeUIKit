@@ -41,6 +41,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background 与 overlay](#background-与-overlay)
   - [Spacer](#spacer)
   - [滚动视图](#滚动视图)
+  - [键盘](#键盘)
   - [列表](#列表)
   - [Xcode 预览](#xcode-预览)
 - [数据绑定](#数据绑定)
@@ -154,14 +155,16 @@ let avatar = UIImageView()
 | `UIPageControl` | `numberOfPages`、`currentPage`、`hidesForSinglePage`、`pageIndicatorTintColor`、`currentPageIndicatorTintColor` |
 | `UIProgressView` | `progress(_:animated:)`、`progressTintColor`、`trackTintColor` |
 | `UIActivityIndicatorView` | `isAnimating`、`hidesWhenStopped`、`color` |
-| `UITextField` | `text`、`attributedText`、`placeholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry` |
-| `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
+| `UITextField` | `text`、`attributedText`、`placeholder`、`attributedPlaceholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`borderStyle`、`clearButtonMode`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`autocapitalizationType`、`autocorrectionType`、`textContentType` |
+| `UITextView` | `text`、`attributedText`、`placeholder`、`attributedPlaceholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`textContainerInset`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`autocapitalizationType`、`autocorrectionType`、`textContentType`、`isEditable`、`isSelectable`、`isScrollEnabled` |
 
 `font(textStyle:)` 跟随 Dynamic Type，`font(_:)` 则设置固定字体。`font(_:relativeTo:)` 让自定义字体像该文字样式的系统字体一样跟随 Dynamic Type；传入默认文字大小下应有的字号。按钮的 modifier 为每个控件状态各设置一个值。`value`、`selectedSegmentIndex`、`currentPage` 这类设置值的 modifier 不会发送 `.valueChanged`。
 
 有 configuration 的按钮的 modifier 修改它的 `UIButton.Configuration`，所以要用 `UIButton(configuration:)` 创建按钮；对没有 configuration 的按钮调用时会以 precondition 失败终止。`title` 和 `image` 对两种按钮都有效，并且按状态生效。有 configuration 的按钮请用 `baseForegroundColor` 而不是 `titleColor` 设置文字颜色，用 configuration 的 `background` 而不是 `backgroundImage` 设置背景。`titleFont` 会替换 configuration 的 `titleTextAttributesTransformer`；`relativeTo:` 与 `textStyle:` 两种形式跟随 Dynamic Type。
 
 `lineHeight` 设置每行的高度，与设计工具中的行高相同；`kerning` 设置每个字符后的间距。`UILabel` 没有对应的属性，所以由 label 保存这两个值并写入 `attributedText`。`text`、`attributedText`、`font` modifier 会重新应用它们；直接赋值 `label.text = …` 不会，所以更新文字时请用 `label.text(…)`。文字按 UIKit 的方式贴在每行底部，而不像设计工具那样垂直居中。行高相对于字体，所以会随 Dynamic Type 变大。
+
+`UITextView` 本身没有 placeholder。`placeholder` 和 `attributedPlaceholder` 在文本视图为空时，在文字开始的位置显示一行占位文字，颜色默认为占位符颜色，带属性的形式则按它自己的属性。输入时它会自动隐藏和显示；`text`、`attributedText`、`font`、`textAlignment`、`textContainerInset` modifier 会同步更新它，直接赋值 `textView.text = …` 不会。
 
 `cornerRadius`、`border` 与 `shadow` 设置视图的 layer。`cornerRadius` 不会裁剪：需要时加上 `clipsToBounds(true)`，但它也会裁掉阴影。layer 接收的是 `CGColor`，因此边框和阴影颜色只在调用时解析一次，之后切换浅色与深色模式时不会跟着变化。
 
@@ -269,6 +272,28 @@ view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 .fillsViewport(true)
 ```
+
+### 键盘
+
+```swift
+let email = UITextField()
+    .placeholder("Email")
+    .textContentType(.emailAddress)
+    .returnKeyType(.next)
+    .onEvent(.editingDidEndOnExit) { _ in password.becomeFirstResponder() }  // 按 return 跳到下一个输入框
+
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
+    email
+    password
+    notes
+}
+.avoidsKeyboard(true)
+```
+
+- `avoidsKeyboard(true)` 适用于任何 `UIScrollView`，包括 `VScroll`、`VList` 和可滚动的 `UITextView`。键盘遮住滚动视图的一部分时，被遮住的高度会加到底部的 content inset 和滚动指示器 inset 上，正在编辑的输入框会滚到键盘上方。你自己设置的 inset 会保留。默认关闭。
+- 只计算被遮住的部分：底边在键盘上方的滚动视图不变，iPad 上的浮动键盘不算遮挡。
+- 滚动视图之外的视图不会移动。必须能点到的按钮请放在滚动视图内容的末尾。
+- 按下 return 时文本框会发送 `.editingDidEndOnExit`，所以用 `onEvent` 就能跳到下一个输入框，不需要代理。
 
 ### 列表
 
@@ -433,7 +458,7 @@ extension UIStackView {
 
 ### 表单
 
-控件就是普通的 `UITextField`、`UISwitch` 和 `UISlider`，用 modifier 配置并作为属性持有。事件用 `onEvent` 闭包和文本框的代理处理。`Spacer` 把开关和数值推到尾部边缘。
+控件就是普通的 `UITextField`、`UISwitch` 和 `UISlider`，用 modifier 配置并作为属性持有。事件用 `onEvent` 闭包处理，return 键跳到下一个输入框。页面用 `avoidsKeyboard` 为键盘留出空间，备注视图显示 placeholder。`Spacer` 把开关和数值推到尾部边缘。
 
 <table>
 <tr>

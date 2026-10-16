@@ -2,29 +2,29 @@ import DeclarativeUIKit
 import UIKit
 
 /// A form whose controls are configured with modifiers, with events handled by
-/// `onEvent` closures and the text fields' delegate.
-final class FormExampleViewController: UIViewController, UITextFieldDelegate {
+/// `onEvent` closures. The page makes room for the keyboard.
+final class FormExampleViewController: UIViewController {
 
     private let name = UITextField()
         .placeholder("Name")
         .font(textStyle: .body)
+        .borderStyle(.roundedRect)
+        .textContentType(.name)
         .returnKeyType(.next)
-        .configure { $0.borderStyle = .roundedRect }
 
     private let email = UITextField()
         .placeholder("Email")
         .font(textStyle: .body)
+        .borderStyle(.roundedRect)
         .keyboardType(.emailAddress)
-        .returnKeyType(.done)
-        .configure {
-            $0.borderStyle = .roundedRect
-            $0.autocapitalizationType = .none
-            $0.autocorrectionType = .no
-        }
+        .textContentType(.emailAddress)
+        .autocapitalizationType(.none)
+        .autocorrectionType(.no)
+        .returnKeyType(.next)
 
     // Not scrollable, so it is as tall as its text and grows while you type.
     private let notes = UITextView()
-        .text("Notes grow with their text, because scrolling is off.")
+        .placeholder("Notes grow with their text")
         .font(textStyle: .body)
         .isScrollEnabled(false)
         .frame(minHeight: 44)
@@ -59,8 +59,9 @@ final class FormExampleViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Form"
-        name.delegate = self
-        email.delegate = self
+        // The return key moves to the next input.
+        name.onEvent(.editingDidEndOnExit) { [weak self] _ in self?.email.becomeFirstResponder() }
+        email.onEvent(.editingDidEndOnExit) { [weak self] _ in self?.notes.becomeFirstResponder() }
         name.onEvent(.editingChanged) { [weak self] _ in self?.inputChanged() }
         email.onEvent(.editingChanged) { [weak self] _ in self?.inputChanged() }
         frequency.onEvent(.valueChanged) { [weak self] _ in self?.frequencyChanged() }
@@ -100,19 +101,11 @@ final class FormExampleViewController: UIViewController, UITextFieldDelegate {
 
             submit
             result
-            note("Submit is enabled once name and email are filled in. The keyboard is UIKit's own; drag the page to dismiss it.")
+            note("Submit is enabled once name and email are filled in. Return moves to the next input; drag the page to dismiss the keyboard.")
         }
         .alwaysBounceVertical(true)
+        .avoidsKeyboard(true)
         .configure { $0.keyboardDismissMode = .onDrag }
-    }
-
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField === name {
-            email.becomeFirstResponder()
-        } else {
-            textField.resignFirstResponder()
-        }
-        return true
     }
 
     private func inputChanged() {
