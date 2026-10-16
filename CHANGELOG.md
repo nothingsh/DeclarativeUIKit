@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `avoidsKeyboard(_:)` on any `UIScrollView`, which adds the height the keyboard covers to the bottom insets and scrolls the input being edited above the keyboard.
+- `placeholder(_:)` and `attributedPlaceholder(_:)` on `UITextView`, shown while the text view is empty.
+- `autocapitalizationType`, `autocorrectionType` and `textContentType` on `UITextField` and `UITextView`; `attributedPlaceholder`, `borderStyle` and `clearButtonMode` on `UITextField`; `textContainerInset` on `UITextView`.
+
 ## [0.5.0] - 2026-10-16
 
 ### Added

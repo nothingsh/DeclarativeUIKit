@@ -21,6 +21,24 @@ public extension UITextField {
         return self
     }
 
+    @discardableResult
+    func attributedPlaceholder(_ value: NSAttributedString?) -> Self {
+        self.attributedPlaceholder = value
+        return self
+    }
+
+    @discardableResult
+    func borderStyle(_ value: UITextField.BorderStyle) -> Self {
+        self.borderStyle = value
+        return self
+    }
+
+    @discardableResult
+    func clearButtonMode(_ value: UITextField.ViewMode) -> Self {
+        self.clearButtonMode = value
+        return self
+    }
+
     /// Sets a fixed font. It does not follow Dynamic Type unless
     /// `adjustsFontForContentSizeCategory` is enabled for a scaled font.
     @discardableResult
@@ -75,6 +93,26 @@ public extension UITextField {
     @discardableResult
     func isSecureTextEntry(_ value: Bool) -> Self {
         self.isSecureTextEntry = value
+        return self
+    }
+
+    @discardableResult
+    func autocapitalizationType(_ value: UITextAutocapitalizationType) -> Self {
+        self.autocapitalizationType = value
+        return self
+    }
+
+    @discardableResult
+    func autocorrectionType(_ value: UITextAutocorrectionType) -> Self {
+        self.autocorrectionType = value
+        return self
+    }
+
+    /// Tells the keyboard what the text is, so it can suggest it or fill it in, such as
+    /// an email address, a password or a one-time code.
+    @discardableResult
+    func textContentType(_ value: UITextContentType?) -> Self {
+        self.textContentType = value
         return self
     }
 }

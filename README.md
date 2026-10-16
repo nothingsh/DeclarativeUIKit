@@ -41,6 +41,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Background and overlay](#background-and-overlay)
   - [Spacer](#spacer)
   - [Scroll views](#scroll-views)
+  - [Keyboard](#keyboard)
   - [Lists](#lists)
   - [Xcode previews](#xcode-previews)
 - [Data binding](#data-binding)
@@ -154,14 +155,16 @@ let avatar = UIImageView()
 | `UIPageControl` | `numberOfPages`, `currentPage`, `hidesForSinglePage`, `pageIndicatorTintColor`, `currentPageIndicatorTintColor` |
 | `UIProgressView` | `progress(_:animated:)`, `progressTintColor`, `trackTintColor` |
 | `UIActivityIndicatorView` | `isAnimating`, `hidesWhenStopped`, `color` |
-| `UITextField` | `text`, `attributedText`, `placeholder`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry` |
-| `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
+| `UITextField` | `text`, `attributedText`, `placeholder`, `attributedPlaceholder`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `borderStyle`, `clearButtonMode`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `autocapitalizationType`, `autocorrectionType`, `textContentType` |
+| `UITextView` | `text`, `attributedText`, `placeholder`, `attributedPlaceholder`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `textContainerInset`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `autocapitalizationType`, `autocorrectionType`, `textContentType`, `isEditable`, `isSelectable`, `isScrollEnabled` |
 
 `font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. `font(_:relativeTo:)` makes a custom font follow Dynamic Type the way the system font for the text style does; give the size it should have at the default text size. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`.
 
 The modifiers for a button with a configuration change its `UIButton.Configuration`, so create the button with `UIButton(configuration:)`; on a button without one they stop with a precondition failure. `title` and `image` work on both kinds of button, per state. On a button with a configuration, color the text with `baseForegroundColor` instead of `titleColor`, and set the background through the configuration's `background` instead of `backgroundImage`. `titleFont` replaces the configuration's `titleTextAttributesTransformer`; the `relativeTo:` and `textStyle:` forms follow Dynamic Type.
 
 `lineHeight` sets the height of each line, as in a design tool, and `kerning` the space after each character. `UILabel` has no property for either, so the label keeps them and writes them into `attributedText`. The `text`, `attributedText` and `font` modifiers apply them again; assigning `label.text = …` directly does not, so update the text with `label.text(…)`. Text sits at the bottom of each line, as UIKit draws it, not centered as in a design tool. The line height is relative to the font, so it grows with Dynamic Type.
+
+`UITextView` has no placeholder of its own. `placeholder` and `attributedPlaceholder` show one line where the text starts while the text view is empty, in the placeholder color unless the attributed form sets its own. Typing hides and shows it, and the `text`, `attributedText`, `font`, `textAlignment` and `textContainerInset` modifiers update it; assigning `textView.text = …` directly does not.
 
 `cornerRadius`, `border` and `shadow` set the view's layer. `cornerRadius` does not clip: add `clipsToBounds(true)`, which also cuts off a shadow. The layer takes a `CGColor`, so a border or shadow color is resolved once and does not follow a later switch between light and dark mode.
 
@@ -269,6 +272,28 @@ view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
 }
 .fillsViewport(true)
 ```
+
+### Keyboard
+
+```swift
+let email = UITextField()
+    .placeholder("Email")
+    .textContentType(.emailAddress)
+    .returnKeyType(.next)
+    .onEvent(.editingDidEndOnExit) { _ in password.becomeFirstResponder() }  // return moves to the next input
+
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
+    email
+    password
+    notes
+}
+.avoidsKeyboard(true)
+```
+
+- `avoidsKeyboard(true)` works on any `UIScrollView`, including `VScroll`, `VList` and a scrolling `UITextView`. While the keyboard covers part of the scroll view, the covered height is added to the bottom content and scroll indicator insets, and the input being edited is scrolled above the keyboard. Insets you set yourself are kept. It is off by default.
+- Only the covered part counts: a scroll view that ends above the keyboard is not changed, and a floating keyboard on iPad covers nothing.
+- Views outside a scroll view do not move. Put a button that must stay reachable at the end of the scroll view's content.
+- A text field sends `.editingDidEndOnExit` when return is pressed, so `onEvent` can move to the next input without a delegate.
 
 ### Lists
 
@@ -433,7 +458,7 @@ extension UIStackView {
 
 ### Form
 
-The controls are plain `UITextField`, `UISwitch` and `UISlider`, configured with modifiers and kept as properties. Events are handled with `onEvent` closures and the text fields' delegate. `Spacer` pushes the switch and the value to the trailing edge.
+The controls are plain `UITextField`, `UISwitch` and `UISlider`, configured with modifiers and kept as properties. Events are handled with `onEvent` closures; the return key moves to the next input. The page makes room for the keyboard with `avoidsKeyboard`, and the notes view shows a placeholder. `Spacer` pushes the switch and the value to the trailing edge.
 
 <table>
 <tr>
