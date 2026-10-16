@@ -32,6 +32,24 @@ final class ScrollTests: XCTestCase {
         XCTAssertEqual(vScroll.contentSize, CGSize(width: 300, height: 600))
     }
 
+    func testRightToLeftHScrollStartsAtTheFirstElement() {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 200))
+        let first = fixedSizeView(width: 200, height: 20)
+        let scroll = host.rootView.addHScroll {
+            first
+            fixedSizeView(width: 200, height: 20)
+        }
+        scroll.stack.semanticContentAttribute = .forceRightToLeft
+        host.layout()
+        XCTAssertEqual(scroll.contentOffset.x, 100)
+        XCTAssertEqual(first.frame.maxX, scroll.bounds.maxX)
+
+        scroll.stack.addArrangedSubview(fixedSizeView(width: 200, height: 20))
+        host.layout()
+        XCTAssertEqual(scroll.contentOffset.x, 300, "Growing content keeps the first element in view.")
+        XCTAssertEqual(first.frame.maxX, scroll.bounds.maxX)
+    }
+
     func testIndicatorsAndInsetAdjustment() {
         let vScroll = VScroll { UIView() }
         XCTAssertTrue(vScroll.showsVerticalScrollIndicator)

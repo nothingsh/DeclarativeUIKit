@@ -151,6 +151,21 @@ final class TextInputTests: XCTestCase {
         }
     }
 
+    func testPlaceholderUsesThePhysicalInsetsInRightToLeft() throws {
+        let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+        let textView = UITextView()
+            .textContainerInset(UIEdgeInsets(top: 8, left: 40, bottom: 8, right: 4))
+            .placeholder("Notes")
+        textView.semanticContentAttribute = .forceRightToLeft
+        pinTop(textView, in: host)
+        host.layout()
+        let label = try XCTUnwrap(textView.subviews.compactMap { $0 as? PlaceholderLabel }.first)
+        let padding = textView.textContainer.lineFragmentPadding
+
+        XCTAssertEqual(label.frame.minX, 40 + padding)
+        XCTAssertEqual(label.frame.maxX, textView.bounds.width - 4 - padding)
+    }
+
     func testPlaceholderShowsOnlyWhileEmpty() throws {
         let textView = UITextView().placeholder("Notes")
         let label = try XCTUnwrap(textView.subviews.compactMap { $0 as? PlaceholderLabel }.first)
