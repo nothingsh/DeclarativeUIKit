@@ -102,7 +102,7 @@ public final class VScroll: UIScrollView {
     /// Sets the padding of the given edges, inside the scrolled content, and keeps the
     /// other edges as they are.
     @discardableResult
-    public func padding(_ edges: LayoutEdges = .all, _ length: CGFloat = 16) -> Self {
+    public func padding(_ edges: LayoutEdges, _ length: CGFloat) -> Self {
         stack.padding(edges, length)
         return self
     }

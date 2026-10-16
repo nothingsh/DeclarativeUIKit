@@ -128,7 +128,7 @@ public final class VList<Item>: UICollectionView {
                 for: indexPath
             )
         }
-        update(sections, animated: false)
+        update(sections: sections, animated: false)
     }
 
     @available(*, unavailable)
@@ -138,12 +138,12 @@ public final class VList<Item>: UICollectionView {
 
     /// Replaces the items of a list built without sections.
     public func update(_ items: [Item], animated: Bool = true) {
-        update([ListSection(id: 0, items: items)], animated: animated)
+        update(sections: [ListSection(id: 0, items: items)], animated: animated)
     }
 
     /// Replaces the sections. Rows are inserted, removed and moved by id, and every row
     /// whose id is in both the old and the new data is configured again.
-    public func update(_ sections: [ListSection<Item>], animated: Bool = true) {
+    public func update(sections: [ListSection<Item>], animated: Bool = true) {
         var snapshot = NSDiffableDataSourceSnapshot<ListID, ListID>()
         var next: [ListID: Item] = [:]
         for section in sections {

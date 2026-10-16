@@ -66,7 +66,7 @@ dependencies: [
 
 Or in Xcode, choose File → Add Package Dependencies and enter `https://github.com/nothingsh/DeclarativeUIKit`.
 
-Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md). For the API reference, open the package in Xcode and choose Product → Build Documentation.
+Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md). Versions follow [Semantic Versioning](https://semver.org/). From 1.0, minor versions only add API, a renamed API stays available as deprecated until the next major version, and the minimum iOS version rises only with a major version. Before 1.0, a minor version may change the API; the changelog then shows how to migrate. For the API reference, open the package in Xcode and choose Product → Build Documentation.
 
 ## Usage
 
@@ -644,7 +644,7 @@ VList(sections: sections(), id: \.id, appearance: .insetGrouped) { [weak self] r
 private func toggleRead(_ id: Int) {
     guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
     messages[index].isRead.toggle()
-    list.update(sections())
+    list.update(sections: sections())
 }
 ```
 

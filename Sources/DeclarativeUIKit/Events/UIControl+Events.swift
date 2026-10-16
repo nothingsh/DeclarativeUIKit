@@ -2,6 +2,7 @@ import UIKit
 
 /// Carries `onEvent` so that `Self` is the concrete control type in its closure.
 /// Every `UIControl` conforms; do not conform other types.
+@_documentation(visibility: internal)
 public protocol ControlEventHandling: UIControl {}
 
 extension UIControl: ControlEventHandling {}

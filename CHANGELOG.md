@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `VList.update(_ sections:animated:)` is now `update(sections:animated:)`, like `init(sections:…)`, so `list.update([])` compiles and empties a list.
+- `padding(_:_:)` takes both the edges and the length; it no longer adds 16 points when they are left out.
+- `HorizontalAlignment` and `VerticalAlignment` are `Sendable`.
+
+### Migration
+
+- `list.update(sections)` → `list.update(sections: sections)`.
+- `stack.padding()` → `stack.padding(16)`, and `stack.padding(.horizontal)` → `stack.padding(.horizontal, 16)`, on stacks, `VScroll` and `HScroll`.
+
 ## [0.8.0] - 2026-10-16
 
 ### Added

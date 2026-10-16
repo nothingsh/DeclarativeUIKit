@@ -30,7 +30,6 @@ final class PaddingTests: XCTestCase {
             CGSize(width: 52, height: 54),
             "A later call keeps the edges it does not name."
         )
-        XCTAssertEqual(fittingSize(stack().padding()), CGSize(width: 52, height: 62))
     }
 
     func testSingleCallPaddingSetsEveryEdge() {

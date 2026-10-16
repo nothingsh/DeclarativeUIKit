@@ -93,24 +93,24 @@ final class ListExampleViewController: UIViewController {
     @objc private func addMessage() {
         let id = (messages.map(\.id).max() ?? 0) + 1
         messages.insert(Message(id: id, title: "Message \(id)"), at: 0)
-        list.update(sections())
+        list.update(sections: sections())
     }
 
     private func deleteMessage(_ id: Int) {
         messages.removeAll { $0.id == id }
-        list.update(sections())
+        list.update(sections: sections())
     }
 
     private func startOver() async {
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         messages = (1...4).map { Message(id: $0, title: "Message \($0)") }
-        list.update(sections())
+        list.update(sections: sections())
     }
 
     private func toggleRead(_ id: Int) {
         guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
         messages[index].isRead.toggle()
-        list.update(sections())
+        list.update(sections: sections())
     }
 }
 
