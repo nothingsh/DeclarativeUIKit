@@ -5,6 +5,7 @@ import UIKit
 /// In a protocol extension `Self` is the caller's concrete type, so the closure receives a
 /// subclass with its own members. Swift 6.1 and earlier do not give a class extension's
 /// `(Self) -> Void` parameter that type.
+@_documentation(visibility: internal)
 public protocol Configurable: AnyObject {}
 
 public extension Configurable {

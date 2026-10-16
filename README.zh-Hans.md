@@ -66,7 +66,7 @@ dependencies: [
 
 或在 Xcode 中选择 File → Add Package Dependencies，输入 `https://github.com/nothingsh/DeclarativeUIKit`。
 
-各版本的变更见 [CHANGELOG.md](CHANGELOG.md)。API 参考文档：在 Xcode 中打开本 package，选择 Product → Build Documentation。
+各版本的变更见 [CHANGELOG.md](CHANGELOG.md)。版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。从 1.0 起，次版本只新增 API；改名的 API 会以已废弃的形式保留到下一个主版本；最低 iOS 版本只在主版本提高。1.0 之前，次版本可能修改 API，变更日志会给出迁移方法。API 参考文档：在 Xcode 中打开本 package，选择 Product → Build Documentation。
 
 ## 用法
 
@@ -644,7 +644,7 @@ VList(sections: sections(), id: \.id, appearance: .insetGrouped) { [weak self] r
 private func toggleRead(_ id: Int) {
     guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
     messages[index].isRead.toggle()
-    list.update(sections())
+    list.update(sections: sections())
 }
 ```
 

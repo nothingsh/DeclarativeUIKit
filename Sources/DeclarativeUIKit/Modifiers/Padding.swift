@@ -30,7 +30,7 @@ public extension UIStackView {
 
     /// Sets the padding of the given edges and keeps the other edges as they are.
     @discardableResult
-    func padding(_ edges: LayoutEdges = .all, _ length: CGFloat = 16) -> Self {
+    func padding(_ edges: LayoutEdges, _ length: CGFloat) -> Self {
         var insets = directionalLayoutMargins
         if edges.contains(.top) { insets.top = length }
         if edges.contains(.leading) { insets.leading = length }

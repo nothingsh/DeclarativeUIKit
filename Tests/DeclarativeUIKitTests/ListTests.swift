@@ -145,7 +145,7 @@ final class ListTests: XCTestCase {
         mount(list)
         XCTAssertEqual(headerTexts(list), ["Account"])
 
-        list.update([
+        list.update(sections: [
             ListSection(id: "a", header: "Profile", items: [Entry(id: 1, text: "x")]),
             ListSection(id: "b", header: "About", items: [Entry(id: 2, text: "y")])
         ])
@@ -249,7 +249,7 @@ final class ListTests: XCTestCase {
 
         list.update([Entry(id: 1, text: "a")])
         XCTAssertTrue(background.isHidden)
-        list.update([Entry]())
+        list.update([])
         XCTAssertFalse(background.isHidden)
     }
 }
