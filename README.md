@@ -59,7 +59,7 @@ Requires iOS 15.0+ and Swift 5.9+. Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nothingsh/DeclarativeUIKit.git", from: "0.3.0")
+    .package(url: "https://github.com/nothingsh/DeclarativeUIKit.git", from: "0.4.0")
 ]
 ```
 
