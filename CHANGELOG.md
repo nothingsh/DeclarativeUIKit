@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-16
+
 ### Added
 
 - `ListRow(text:secondaryText:image:)` and `ListRow(content:)`, rows in UIKit's standard style.
@@ -71,7 +73,8 @@ All notable changes to this project are documented here. The format follows
 
 First release.
 
-[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/nothingsh/DeclarativeUIKit/compare/0.3.0...0.4.0
