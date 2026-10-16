@@ -63,4 +63,68 @@ final class TextLayoutTests: XCTestCase {
         XCTAssertGreaterThan(label.intrinsicContentSize.height, regularHeight)
         XCTAssertGreaterThan(label.frame.height, regularHeight)
     }
+
+    func testLineHeightSetsEachLineAndSurvivesNewTextAndFont() {
+        let label = UILabel()
+            .text("One\nTwo\nThree")
+            .numberOfLines(0)
+            .textAlignment(.center)
+            .lineHeight(30)
+            .font(.systemFont(ofSize: 16))
+
+        XCTAssertEqual(label.intrinsicContentSize.height, 90, accuracy: 1)
+        XCTAssertEqual(label.textAlignment, .center)
+
+        label.text("One\nTwo")
+
+        XCTAssertEqual(label.intrinsicContentSize.height, 60, accuracy: 1)
+    }
+
+    func testKerningSurvivesNewText() {
+        let plain = UILabel().text("Kerning")
+        let label = UILabel().kerning(4).text("Text").text("Kerning")
+
+        XCTAssertGreaterThan(label.intrinsicContentSize.width, plain.intrinsicContentSize.width + 20)
+    }
+
+    func testLineHeightScalesWithDynamicType() throws {
+        guard #available(iOS 17.0, *) else {
+            throw XCTSkip("Trait overrides need iOS 17.")
+        }
+        let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+        host.setPreferredContentSizeCategory(.large)
+        let label = UILabel().font(textStyle: .body).lineHeight(30).numberOfLines(0).text("One\nTwo")
+        pinTop(label, in: host)
+        let regularFont = label.font!
+        let regularHeight = label.frame.height
+
+        host.setPreferredContentSizeCategory(.accessibilityExtraLarge)
+
+        XCTAssertGreaterThan(label.font.pointSize, regularFont.pointSize)
+        XCTAssertEqual(
+            label.frame.height / regularHeight,
+            label.font.lineHeight / regularFont.lineHeight,
+            accuracy: 0.1,
+            "Lines must grow with the font, not keep their height."
+        )
+    }
+
+    func testFontRelativeToTextStyleFollowsContentSizeCategory() throws {
+        guard #available(iOS 17.0, *) else {
+            throw XCTSkip("Trait overrides need iOS 17.")
+        }
+        let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
+        host.setPreferredContentSizeCategory(.large)
+        let brand = UIFont(name: "Georgia", size: 16)!
+        let label = UILabel().text("Brand").font(brand, relativeTo: .body)
+        pinTop(label, in: host)
+
+        XCTAssertEqual(label.font.fontName, brand.fontName)
+        XCTAssertEqual(label.font.pointSize, 16)
+
+        host.setPreferredContentSizeCategory(.accessibilityExtraLarge)
+
+        XCTAssertEqual(label.font.fontName, brand.fontName)
+        XCTAssertGreaterThan(label.font.pointSize, 30)
+    }
 }

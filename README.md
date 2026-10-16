@@ -114,6 +114,13 @@ let title = UILabel()
     .font(textStyle: .title2)                   // follows Dynamic Type
     .numberOfLines(0)
 
+let body = UILabel()
+    .font(UIFont(name: "Avenir-Book", size: 16)!, relativeTo: .body)  // custom font, follows Dynamic Type
+    .lineHeight(24)
+    .kerning(0.2)
+    .numberOfLines(0)
+    .text(article.body)
+
 let play = UIButton(type: .system)
     .title("Play")
     .title("Pause", for: .selected)
@@ -128,7 +135,7 @@ let avatar = UIImageView()
 | Type | Modifiers |
 | --- | --- |
 | `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityHint`, `accessibilityTraits`, `isAccessibilityElement`, `accessibilityIdentifier`, `cornerRadius`, `border(color:width:)`, `shadow` |
-| `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode`, `adjustsFontSizeToFitWidth`, `minimumScaleFactor` |
+| `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `lineHeight`, `kerning`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode`, `adjustsFontSizeToFitWidth`, `minimumScaleFactor` |
 | `UIImageView` | `image`, `highlightedImage`, `preferredSymbolConfiguration` |
 | `UIControl` and any subclass | `isEnabled`, `isSelected`, `isHighlighted` |
 | `UIButton` | `title`, `titleColor`, `image`, `backgroundImage`, each with `for state: UIControl.State = .normal` |
@@ -139,10 +146,12 @@ let avatar = UIImageView()
 | `UIPageControl` | `numberOfPages`, `currentPage`, `hidesForSinglePage`, `pageIndicatorTintColor`, `currentPageIndicatorTintColor` |
 | `UIProgressView` | `progress(_:animated:)`, `progressTintColor`, `trackTintColor` |
 | `UIActivityIndicatorView` | `isAnimating`, `hidesWhenStopped`, `color` |
-| `UITextField` | `text`, `attributedText`, `placeholder`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry` |
-| `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
+| `UITextField` | `text`, `attributedText`, `placeholder`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry` |
+| `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
 
-`font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`.
+`font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. `font(_:relativeTo:)` makes a custom font follow Dynamic Type the way the system font for the text style does; give the size it should have at the default text size. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`.
+
+`lineHeight` sets the height of each line, as in a design tool, and `kerning` the space after each character. `UILabel` has no property for either, so the label keeps them and writes them into `attributedText`. The `text`, `attributedText` and `font` modifiers apply them again; assigning `label.text = …` directly does not, so update the text with `label.text(…)`. Text sits at the bottom of each line, as UIKit draws it, not centered as in a design tool. The line height is relative to the font, so it grows with Dynamic Type.
 
 `cornerRadius`, `border` and `shadow` set the view's layer. `cornerRadius` does not clip: add `clipsToBounds(true)`, which also cuts off a shadow. The layer takes a `CGColor`, so a border or shadow color is resolved once and does not follow a later switch between light and dark mode.
 

@@ -6,12 +6,14 @@ public extension UILabel {
     @discardableResult
     func text(_ value: String?) -> Self {
         self.text = value
+        applyTextStyle()
         return self
     }
 
     @discardableResult
     func attributedText(_ value: NSAttributedString?) -> Self {
         self.attributedText = value
+        applyTextStyle()
         return self
     }
 
@@ -20,6 +22,7 @@ public extension UILabel {
     @discardableResult
     func font(_ value: UIFont?) -> Self {
         self.font = value
+        applyTextStyle()
         return self
     }
 
@@ -29,6 +32,18 @@ public extension UILabel {
     func font(textStyle: UIFont.TextStyle) -> Self {
         self.font = UIFont.preferredFont(forTextStyle: textStyle)
         self.adjustsFontForContentSizeCategory = true
+        applyTextStyle()
+        return self
+    }
+
+    /// Scales `value` with Dynamic Type the way the system font for `textStyle`
+    /// scales, so a custom font follows the content size category. Give the
+    /// size the font should have at the default category.
+    @discardableResult
+    func font(_ value: UIFont, relativeTo textStyle: UIFont.TextStyle) -> Self {
+        self.font = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: value)
+        self.adjustsFontForContentSizeCategory = true
+        applyTextStyle()
         return self
     }
 

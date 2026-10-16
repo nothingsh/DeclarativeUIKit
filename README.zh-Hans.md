@@ -114,6 +114,13 @@ let title = UILabel()
     .font(textStyle: .title2)                   // 跟随 Dynamic Type
     .numberOfLines(0)
 
+let body = UILabel()
+    .font(UIFont(name: "Avenir-Book", size: 16)!, relativeTo: .body)  // 自定义字体，跟随 Dynamic Type
+    .lineHeight(24)
+    .kerning(0.2)
+    .numberOfLines(0)
+    .text(article.body)
+
 let play = UIButton(type: .system)
     .title("Play")
     .title("Pause", for: .selected)
@@ -128,7 +135,7 @@ let avatar = UIImageView()
 | 类型 | Modifier |
 | --- | --- |
 | `UIView` 及其任何子类 | `configure`、`alpha`、`isHidden`、`isUserInteractionEnabled`、`contentMode`、`tintColor`、`clipsToBounds`、`accessibilityLabel`、`accessibilityHint`、`accessibilityTraits`、`isAccessibilityElement`、`accessibilityIdentifier`、`cornerRadius`、`border(color:width:)`、`shadow` |
-| `UILabel` | `text`、`attributedText`、`font`、`font(textStyle:)`、`textColor`、`numberOfLines`、`textAlignment`、`lineBreakMode`、`adjustsFontSizeToFitWidth`、`minimumScaleFactor` |
+| `UILabel` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`lineHeight`、`kerning`、`textColor`、`numberOfLines`、`textAlignment`、`lineBreakMode`、`adjustsFontSizeToFitWidth`、`minimumScaleFactor` |
 | `UIImageView` | `image`、`highlightedImage`、`preferredSymbolConfiguration` |
 | `UIControl` 及其任何子类 | `isEnabled`、`isSelected`、`isHighlighted` |
 | `UIButton` | `title`、`titleColor`、`image`、`backgroundImage`，均带 `for state: UIControl.State = .normal` |
@@ -139,10 +146,12 @@ let avatar = UIImageView()
 | `UIPageControl` | `numberOfPages`、`currentPage`、`hidesForSinglePage`、`pageIndicatorTintColor`、`currentPageIndicatorTintColor` |
 | `UIProgressView` | `progress(_:animated:)`、`progressTintColor`、`trackTintColor` |
 | `UIActivityIndicatorView` | `isAnimating`、`hidesWhenStopped`、`color` |
-| `UITextField` | `text`、`attributedText`、`placeholder`、`font`、`font(textStyle:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry` |
-| `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
+| `UITextField` | `text`、`attributedText`、`placeholder`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry` |
+| `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
 
-`font(textStyle:)` 跟随 Dynamic Type，`font(_:)` 则设置固定字体。按钮的 modifier 为每个控件状态各设置一个值。`value`、`selectedSegmentIndex`、`currentPage` 这类设置值的 modifier 不会发送 `.valueChanged`。
+`font(textStyle:)` 跟随 Dynamic Type，`font(_:)` 则设置固定字体。`font(_:relativeTo:)` 让自定义字体像该文字样式的系统字体一样跟随 Dynamic Type；传入默认文字大小下应有的字号。按钮的 modifier 为每个控件状态各设置一个值。`value`、`selectedSegmentIndex`、`currentPage` 这类设置值的 modifier 不会发送 `.valueChanged`。
+
+`lineHeight` 设置每行的高度，与设计工具中的行高相同；`kerning` 设置每个字符后的间距。`UILabel` 没有对应的属性，所以由 label 保存这两个值并写入 `attributedText`。`text`、`attributedText`、`font` modifier 会重新应用它们；直接赋值 `label.text = …` 不会，所以更新文字时请用 `label.text(…)`。文字按 UIKit 的方式贴在每行底部，而不像设计工具那样垂直居中。行高相对于字体，所以会随 Dynamic Type 变大。
 
 `cornerRadius`、`border` 与 `shadow` 设置视图的 layer。`cornerRadius` 不会裁剪：需要时加上 `clipsToBounds(true)`，但它也会裁掉阴影。layer 接收的是 `CGColor`，因此边框和阴影颜色只在调用时解析一次，之后切换浅色与深色模式时不会跟着变化。
 
