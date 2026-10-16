@@ -123,7 +123,7 @@ private final class SwitchRow: UIView, ListRowView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        toggle.addTarget(self, action: #selector(changed), for: .valueChanged)
+        toggle.onEvent(.valueChanged) { [weak self] in self?.onChange?($0.isOn) }
         addHStack(spacing: 8) {
             title
             Spacer()
@@ -139,9 +139,5 @@ private final class SwitchRow: UIView, ListRowView {
     func update(title: String, isOn: Bool) {
         self.title.text(title)
         toggle.isOn = isOn
-    }
-
-    @objc private func changed() {
-        onChange?(toggle.isOn)
     }
 }

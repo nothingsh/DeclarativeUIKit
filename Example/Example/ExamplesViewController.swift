@@ -11,28 +11,28 @@ final class ExamplesViewController: UIViewController {
             entry(
                 "Profile card",
                 detail: "Stacks, frame, background, overlay and Dynamic Type. Change a label through its reference and the card resizes.",
-                action: #selector(showProfile)
+                show: ProfileExampleViewController.init
             )
             entry(
                 "Form",
-                detail: "Text fields, a growing text view, a switch and a slider, wired with UIKit target–action and delegates.",
-                action: #selector(showForm)
+                detail: "Text fields, a growing text view, a switch and a slider, wired with onEvent closures and a delegate.",
+                show: FormExampleViewController.init
             )
             entry(
                 "Scrolling",
                 detail: "HScroll rows inside a VScroll, and rows appended at runtime.",
-                action: #selector(showScroll)
+                show: ScrollExampleViewController.init
             )
             entry(
                 "List",
                 detail: "A grouped VList with reusable rows, updated by passing new data.",
-                action: #selector(showList)
+                show: ListExampleViewController.init
             )
         }
     }
 
     /// A card whose whole area is a button, placed with `overlay`.
-    private func entry(_ title: String, detail: String, action: Selector) -> UIView {
+    private func entry(_ title: String, detail: String, show screen: @escaping () -> UIViewController) -> UIView {
         VStack(alignment: .leading, spacing: 4) {
             UILabel()
                 .text(title)
@@ -47,23 +47,9 @@ final class ExamplesViewController: UIViewController {
         .overlay {
             UIButton(type: .system)
                 .accessibilityLabel(title)
-                .configure { $0.addTarget(self, action: action, for: .touchUpInside) }
+                .onEvent(.primaryActionTriggered) { [weak self] _ in
+                    self?.navigationController?.pushViewController(screen(), animated: true)
+                }
         }
-    }
-
-    @objc private func showProfile() {
-        navigationController?.pushViewController(ProfileExampleViewController(), animated: true)
-    }
-
-    @objc private func showForm() {
-        navigationController?.pushViewController(FormExampleViewController(), animated: true)
-    }
-
-    @objc private func showScroll() {
-        navigationController?.pushViewController(ScrollExampleViewController(), animated: true)
-    }
-
-    @objc private func showList() {
-        navigationController?.pushViewController(ListExampleViewController(), animated: true)
     }
 }

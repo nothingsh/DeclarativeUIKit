@@ -1,8 +1,8 @@
 import DeclarativeUIKit
 import UIKit
 
-/// A form whose controls are configured with modifiers and wired with UIKit's own
-/// target–action and delegates.
+/// A form whose controls are configured with modifiers, with events handled by
+/// `onEvent` closures and the text fields' delegate.
 final class FormExampleViewController: UIViewController, UITextFieldDelegate {
 
     private let name = UITextField()
@@ -60,10 +60,10 @@ final class FormExampleViewController: UIViewController, UITextFieldDelegate {
         title = "Form"
         name.delegate = self
         email.delegate = self
-        name.addTarget(self, action: #selector(inputChanged), for: .editingChanged)
-        email.addTarget(self, action: #selector(inputChanged), for: .editingChanged)
-        frequency.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
-        submit.addTarget(self, action: #selector(submitForm), for: .touchUpInside)
+        name.onEvent(.editingChanged) { [weak self] _ in self?.inputChanged() }
+        email.onEvent(.editingChanged) { [weak self] _ in self?.inputChanged() }
+        frequency.onEvent(.valueChanged) { [weak self] _ in self?.frequencyChanged() }
+        submit.onEvent(.primaryActionTriggered) { [weak self] _ in self?.submitForm() }
         frequencyChanged()
 
         addScreen {
@@ -114,16 +114,16 @@ final class FormExampleViewController: UIViewController, UITextFieldDelegate {
         return true
     }
 
-    @objc private func inputChanged() {
+    private func inputChanged() {
         submit.isEnabled(!(name.text ?? "").isEmpty && !(email.text ?? "").isEmpty)
     }
 
-    @objc private func frequencyChanged() {
+    private func frequencyChanged() {
         frequency.value(frequency.value.rounded())
         frequencyValue.text("\(Int(frequency.value))")
     }
 
-    @objc private func submitForm() {
+    private func submitForm() {
         view.endEditing(true)
         result.text("""
             Saved \(name.text ?? "") <\(email.text ?? "")>, \

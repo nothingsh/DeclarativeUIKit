@@ -36,6 +36,7 @@ view.addVStack(alignment: .leading, spacing: 4) {
   - [Mounting](#mounting)
   - [Stacks](#stacks)
   - [Property modifiers](#property-modifiers)
+  - [Events](#events)
   - [Padding and frame](#padding-and-frame)
   - [Background and overlay](#background-and-overlay)
   - [Spacer](#spacer)
@@ -140,9 +141,33 @@ let avatar = UIImageView()
 | `UITextField` | `text`, `attributedText`, `placeholder`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry` |
 | `UITextView` | `text`, `attributedText`, `font`, `font(textStyle:)`, `textColor`, `textAlignment`, `keyboardType`, `returnKeyType`, `isSecureTextEntry`, `isEditable`, `isSelectable`, `isScrollEnabled` |
 
-`font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`. Events stay UIKit's own target–action and delegates.
+`font(textStyle:)` follows Dynamic Type, while `font(_:)` sets a fixed font. Button modifiers set one value per control state. Value modifiers such as `value`, `selectedSegmentIndex` and `currentPage` send no `.valueChanged`.
 
 `cornerRadius`, `border` and `shadow` set the view's layer. `cornerRadius` does not clip: add `clipsToBounds(true)`, which also cuts off a shadow. The layer takes a `CGColor`, so a border or shadow color is resolved once and does not follow a later switch between light and dark mode.
+
+### Events
+
+`onEvent` runs a closure each time a control sends one of the given `UIControl.Event`s. The closure receives the control as its own type, so it can read `isOn`, `value` or `text` without the control being kept in a property. `onTapGesture` and `onLongPressGesture` work on any view.
+
+```swift
+UISwitch()
+    .onEvent(.valueChanged) { [weak self] toggle in
+        self?.settings.isEnabled = toggle.isOn
+    }
+
+UIButton(type: .system)
+    .title("Save")
+    .onEvent(.primaryActionTriggered) { [weak self] _ in self?.save() }
+
+UIImageView(image: avatar)
+    .onTapGesture { [weak self] in self?.showProfile() }
+    .onLongPressGesture { [weak self] in self?.showMenu() }
+```
+
+- Each gesture modifier adds a recognizer and turns on `isUserInteractionEnabled`, which `UILabel` and `UIImageView` leave off. `onTapGesture(count:perform:)` needs one tap by default. `onLongPressGesture(minimumDuration:perform:)` runs its closure once, when the press has lasted `minimumDuration`, 0.5 seconds by default.
+- Each call adds another action or recognizer; earlier ones stay. To stop them, turn the control or view off with `isEnabled` or `isUserInteractionEnabled`.
+- The control keeps its closures, and the view keeps its recognizers and their closures. Capture a view controller with `[weak self]`, or it and the view keep each other alive.
+- Delegates, such as `UITextFieldDelegate`, are set as usual.
 
 ### Padding and frame
 
@@ -295,7 +320,7 @@ Xcode 15 and later preview a UIKit view directly. The `#Preview` macro for UIKit
 
 ## Data binding
 
-DeclarativeUIKit lays views out and stops there: a content closure runs once, and the library has no binding of its own. A view that changes later, or that reports events, has to be kept in a property and wired by hand.
+DeclarativeUIKit lays views out and stops there: a content closure runs once, and the library has no binding of its own. A view that changes later has to be kept in a property and updated by hand.
 
 [DeclarativeCombine](https://github.com/nothingsh/DeclarativeCombine) is the companion package that removes that step. It provides Combine publishers for UIKit controls, scroll views and gestures, and modifiers that bind a view to a publisher in the place where the view is declared:
 
@@ -378,7 +403,7 @@ extension UIStackView {
 
 ### Form
 
-The controls are plain `UITextField`, `UISwitch` and `UISlider`, configured with modifiers and kept as properties. Events use UIKit's own target–action and delegates. `Spacer` pushes the switch and the value to the trailing edge.
+The controls are plain `UITextField`, `UISwitch` and `UISlider`, configured with modifiers and kept as properties. Events are handled with `onEvent` closures and the text fields' delegate. `Spacer` pushes the switch and the value to the trailing edge.
 
 <table>
 <tr>
@@ -393,8 +418,9 @@ private let frequency = UISlider()
     .value(3)
 
 // In viewDidLoad:
-frequency.addTarget(self, action: #selector(frequencyChanged),
-                    for: .valueChanged)
+frequency.onEvent(.valueChanged) { [weak self] _ in
+    self?.frequencyChanged()
+}
 
 VStack(alignment: .fill, spacing: 12) {
     HStack(spacing: 8) {
