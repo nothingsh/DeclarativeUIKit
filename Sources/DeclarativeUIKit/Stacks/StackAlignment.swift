@@ -1,6 +1,6 @@
 import UIKit
 
-/// Cross-axis alignment of the elements in a `VStack`.
+/// Cross-axis alignment of the elements in a `VStack` or `VScroll`.
 public enum HorizontalAlignment: Sendable {
     case leading
     case center
@@ -19,7 +19,7 @@ public enum HorizontalAlignment: Sendable {
     }
 }
 
-/// Cross-axis alignment of the elements in an `HStack`.
+/// Cross-axis alignment of the elements in an `HStack` or `HScroll`.
 ///
 /// The baseline cases use UIKit's own baseline alignment; they are not SwiftUI's
 /// alignment guides.

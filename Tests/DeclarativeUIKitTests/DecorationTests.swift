@@ -142,6 +142,18 @@ final class DecorationTests: XCTestCase {
         XCTAssertEqual(badge.frame, CGRect(x: 90, y: 50, width: 10, height: 10))
     }
 
+    func testOverlayOnAScrollViewStaysOverTheVisibleArea() {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 400))
+        let badge = fixedSizeView(width: 20, height: 20)
+        let scroll = host.rootView.addVScroll { UIView().frame(height: 1000) }
+            .overlay(alignment: .bottomTrailing) { badge }
+        host.layout()
+        scroll.contentOffset.y = 200
+        host.layout()
+
+        XCTAssertEqual(badge.frame, CGRect(x: 280, y: 580, width: 20, height: 20))
+    }
+
     func testHitTestingFollowsLayering() {
         let host = LayoutTestHost(size: CGSize(width: 320, height: 640))
         let button = UIButton().frame(width: 40, height: 20)

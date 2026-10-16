@@ -40,6 +40,11 @@ public extension UIView {
     /// A shadow is drawn outside the bounds, so it disappears with `clipsToBounds(true)`.
     /// The color follows the appearance, as for `border`. `offset` is positive toward the
     /// right and the bottom.
+    ///
+    /// Without a `layer.shadowPath`, Core Animation finds the shadow's shape from the
+    /// view's content each time it draws, which costs the most in scrolling content with
+    /// many shadows. Set `layer.shadowPath` when the shape is known, for example in
+    /// `layoutSubviews` of your own view.
     @discardableResult
     func shadow(
         color: UIColor = .black,
@@ -55,6 +60,7 @@ public extension UIView {
     }
 }
 
+@MainActor
 extension UIView {
 
     private var layerColorObserver: LayerColorObserver {

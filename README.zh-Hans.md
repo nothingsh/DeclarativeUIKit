@@ -309,7 +309,7 @@ list.update(newOrders)           // 按 id 插入、删除和移动行
 - 自己的行视图就是声明了 `ListRowView` 的任意 `UIView`：在 `init` 里搭好结构，再提供一个 `update` 方法。
 - 分组页面传入 `sections:`（由 `ListSection(id:header:footer:items:)` 组成）和 `.insetGrouped` 等 `appearance`，之后调用 `update(sections:)`。
 - `scrollTo(id)` 滚动到某一行，`onRefresh` 添加下拉刷新。
-- 列表自己担任 `delegate`，`onSelect` 依赖它；不要替换。
+- 列表自己设置了 `delegate`，`onSelect` 和 `onReachEnd` 依赖它；不要替换。
 
 ## 示例应用
 
@@ -344,7 +344,7 @@ AppKit 版本见姊妹 package [DeclarativeAppKit](https://github.com/nothingsh/
 
 - **文档。** 在 Xcode 中打开本 package，选择 Product → Build Documentation，可以看到完整的 API 参考和一篇编写可复用组件的指南。
 - **Xcode 预览。** UIKit 视图可以用 `#Preview` 预览，它需要 iOS 17；如果 target 支持更早的版本，给预览加上 `@available(iOS 17, *)`。
-- **调试布局。** 库创建的每一条约束都以创建它的 modifier 命名，例如 `DeclarativeUIKit.frame.width` 或 `DeclarativeUIKit.addContent.top`，控制台里的约束冲突因此能看出来源。
+- **调试布局。** 库创建的每一条约束都以创建它的 modifier 或视图命名，例如 `DeclarativeUIKit.frame.width` 或 `DeclarativeUIKit.addContent.top`，控制台里的约束冲突因此能看出来源。
 
 ## 版本
 

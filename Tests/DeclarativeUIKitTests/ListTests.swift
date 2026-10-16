@@ -237,6 +237,23 @@ final class ListTests: XCTestCase {
         XCTAssertEqual(reachedEnd, 1)
     }
 
+    func testReachingTheEndSkipsEmptyLastSections() {
+        var reachedEnd = 0
+        let list = VList(
+            sections: [
+                ListSection(id: "a", items: [Entry(id: 1, text: "x")]),
+                ListSection(id: "b", items: [])
+            ],
+            id: \.id
+        ) { entry in
+            ListRow(TextRow.self) { $0.label.text = entry.text }
+        }
+        .onReachEnd { reachedEnd += 1 }
+        mount(list)
+
+        XCTAssertEqual(reachedEnd, 1)
+    }
+
     func testEmptyViewShowsOnlyWithoutRows() throws {
         let message = UILabel().text("No entries")
         let list = textList([]).emptyView(message, offset: CGPoint(x: 10, y: -40))

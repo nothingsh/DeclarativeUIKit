@@ -108,6 +108,7 @@ public extension UIButton {
     }
 }
 
+@MainActor
 private extension UIButton {
 
     func updateConfiguration(_ change: (inout UIButton.Configuration) -> Void) -> Self {

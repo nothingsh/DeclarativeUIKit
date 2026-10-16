@@ -309,7 +309,7 @@ list.update(newOrders)           // inserts, removes and moves rows by id
 - Your own row view is any `UIView` that declares `ListRowView`. Build it in `init` and give it an `update` method.
 - For grouped screens, pass `sections:` with `ListSection(id:header:footer:items:)` and an `appearance` such as `.insetGrouped`, and later call `update(sections:)`.
 - `scrollTo(id)` scrolls to a row, and `onRefresh` adds pull to refresh.
-- The list is its own `delegate`, which `onSelect` relies on; do not replace it.
+- The list sets its own `delegate`, which `onSelect` and `onReachEnd` rely on; do not replace it.
 
 ## Example app
 
@@ -344,7 +344,7 @@ For AppKit, see the sibling package [DeclarativeAppKit](https://github.com/nothi
 
 - **Documentation.** Open the package in Xcode and choose Product → Build Documentation for the full API reference and a guide to building reusable components.
 - **Xcode previews.** UIKit views preview with `#Preview`, which needs iOS 17; mark the preview `@available(iOS 17, *)` in a target that supports older versions.
-- **Debugging layout.** Every constraint the library creates is named after the modifier that made it, such as `DeclarativeUIKit.frame.width` or `DeclarativeUIKit.addContent.top`, so a conflict in the console shows where it came from.
+- **Debugging layout.** Every constraint the library creates is named after the modifier or view that made it, such as `DeclarativeUIKit.frame.width` or `DeclarativeUIKit.addContent.top`, so a conflict in the console shows where it came from.
 
 ## Versioning
 
