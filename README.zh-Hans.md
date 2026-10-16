@@ -125,6 +125,13 @@ let play = UIButton(type: .system)
     .title("Play")
     .title("Pause", for: .selected)
 
+let save = UIButton(configuration: .filled())
+    .title("Save")
+    .image(UIImage(systemName: "checkmark"))
+    .imagePadding(8)
+    .cornerStyle(.capsule)
+    .titleFont(textStyle: .headline)            // 跟随 Dynamic Type
+
 let avatar = UIImageView()
     .image(photo)
     .cornerRadius(24)
@@ -139,6 +146,7 @@ let avatar = UIImageView()
 | `UIImageView` | `image`、`highlightedImage`、`preferredSymbolConfiguration` |
 | `UIControl` 及其任何子类 | `isEnabled`、`isSelected`、`isHighlighted` |
 | `UIButton` | `title`、`titleColor`、`image`、`backgroundImage`，均带 `for state: UIControl.State = .normal` |
+| 有 configuration 的 `UIButton` | `buttonSize`、`cornerStyle`、`contentInsets`、`baseForegroundColor`、`baseBackgroundColor`、`subtitle`、`titleAlignment`、`titlePadding`、`titleFont`、`titleFont(_:relativeTo:)`、`titleFont(textStyle:)`、`imagePlacement`、`imagePadding`、`preferredSymbolConfigurationForImage`、`showsActivityIndicator` |
 | `UISwitch` | `isOn`、`onTintColor` |
 | `UISlider` | `value`、`minimumValue`、`maximumValue`、`minimumTrackTintColor`、`maximumTrackTintColor` |
 | `UIStepper` | `value`、`minimumValue`、`maximumValue`、`stepValue` |
@@ -150,6 +158,8 @@ let avatar = UIImageView()
 | `UITextView` | `text`、`attributedText`、`font`、`font(textStyle:)`、`font(_:relativeTo:)`、`textColor`、`textAlignment`、`keyboardType`、`returnKeyType`、`isSecureTextEntry`、`isEditable`、`isSelectable`、`isScrollEnabled` |
 
 `font(textStyle:)` 跟随 Dynamic Type，`font(_:)` 则设置固定字体。`font(_:relativeTo:)` 让自定义字体像该文字样式的系统字体一样跟随 Dynamic Type；传入默认文字大小下应有的字号。按钮的 modifier 为每个控件状态各设置一个值。`value`、`selectedSegmentIndex`、`currentPage` 这类设置值的 modifier 不会发送 `.valueChanged`。
+
+有 configuration 的按钮的 modifier 修改它的 `UIButton.Configuration`，所以要用 `UIButton(configuration:)` 创建按钮；对没有 configuration 的按钮调用时会以 precondition 失败终止。`title` 和 `image` 对两种按钮都有效，并且按状态生效。有 configuration 的按钮请用 `baseForegroundColor` 而不是 `titleColor` 设置文字颜色，用 configuration 的 `background` 而不是 `backgroundImage` 设置背景。`titleFont` 会替换 configuration 的 `titleTextAttributesTransformer`；`relativeTo:` 与 `textStyle:` 两种形式跟随 Dynamic Type。
 
 `lineHeight` 设置每行的高度，与设计工具中的行高相同；`kerning` 设置每个字符后的间距。`UILabel` 没有对应的属性，所以由 label 保存这两个值并写入 `attributedText`。`text`、`attributedText`、`font` modifier 会重新应用它们；直接赋值 `label.text = …` 不会，所以更新文字时请用 `label.text(…)`。文字按 UIKit 的方式贴在每行底部，而不像设计工具那样垂直居中。行高相对于字体，所以会随 Dynamic Type 变大。
 

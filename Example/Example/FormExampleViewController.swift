@@ -45,9 +45,10 @@ final class FormExampleViewController: UIViewController, UITextFieldDelegate {
         .font(textStyle: .body)
         .textColor(.secondaryLabel)
 
-    private let submit = UIButton(type: .system)
+    private let submit = UIButton(configuration: .filled())
         .title("Submit")
-        .titleColor(.tertiaryLabel, for: .disabled)
+        .buttonSize(.large)
+        .cornerStyle(.large)
         .isEnabled(false)
 
     private let result = UILabel()
