@@ -212,4 +212,18 @@ final class ScrollTests: XCTestCase {
         XCTAssertEqual(runs, ["second"])
         XCTAssertFalse(control.isRefreshing)
     }
+
+    func testFillsViewportCountsOnlyTheHeightInsideTheAdjustedInsets() {
+        let host = LayoutTestHost(
+            size: CGSize(width: 300, height: 600),
+            additionalSafeAreaInsets: UIEdgeInsets(top: 100, left: 0, bottom: 40, right: 0)
+        )
+        let scroll = host.rootView.addVScroll { UIView().frame(height: 50) }
+            .fillsViewport(true)
+            .contentInsetAdjustmentBehavior(.always)
+        host.layout()
+
+        XCTAssertEqual(scroll.contentSize.height, 600 - scroll.adjustedContentInset.top - scroll.adjustedContentInset.bottom)
+        XCTAssertGreaterThan(scroll.adjustedContentInset.top, 100)
+    }
 }

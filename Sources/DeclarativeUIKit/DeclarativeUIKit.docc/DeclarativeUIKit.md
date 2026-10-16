@@ -29,6 +29,7 @@ view.addVStack(alignment: .leading, spacing: 4, safeArea: .all) {
 - ``VStack``
 - ``HStack``
 - ``Spacer``
+- ``Divider``
 - ``HorizontalAlignment``
 - ``VerticalAlignment``
 
@@ -43,6 +44,10 @@ view.addVStack(alignment: .leading, spacing: 4, safeArea: .all) {
 - ``ListRow``
 - ``ListRowView``
 - ``ListSection``
+
+### Views
+
+- ``GradientView``
 
 ### Building content
 

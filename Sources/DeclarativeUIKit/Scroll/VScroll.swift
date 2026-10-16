@@ -37,6 +37,11 @@ public final class VScroll: UIScrollView {
         fatalError("VScroll is built in code and does not support init(coder:).")
     }
 
+    public override func adjustedContentInsetDidChange() {
+        super.adjustedContentInsetDidChange()
+        fillsViewportConstraint.constant = -(adjustedContentInset.top + adjustedContentInset.bottom)
+    }
+
     /// Sets whether the vertical scroll indicator is shown.
     @discardableResult
     public func showsIndicators(_ value: Bool) -> Self {
@@ -48,7 +53,9 @@ public final class VScroll: UIScrollView {
     /// short content keeps its own height.
     ///
     /// The extra height goes to a `Spacer`, which can push the elements after it to the
-    /// bottom. Taller content scrolls as usual. `contentInset` is not taken into account.
+    /// bottom. Taller content scrolls as usual. The height inside `adjustedContentInset`
+    /// counts, so the content fits between bars under an automatic adjustment behavior,
+    /// and above the keyboard with `avoidsKeyboard(true)`.
     @discardableResult
     public func fillsViewport(_ value: Bool) -> Self {
         fillsViewportConstraint.isActive = value

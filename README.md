@@ -142,7 +142,7 @@ let avatar = UIImageView()
 
 | Type | Modifiers |
 | --- | --- |
-| `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityHint`, `accessibilityTraits`, `isAccessibilityElement`, `accessibilityIdentifier`, `cornerRadius`, `border(color:width:)`, `shadow` |
+| `UIView` and any subclass | `configure`, `alpha`, `isHidden`, `isUserInteractionEnabled`, `contentMode`, `tintColor`, `clipsToBounds`, `accessibilityLabel`, `accessibilityHint`, `accessibilityTraits`, `isAccessibilityElement`, `accessibilityIdentifier`, `cornerRadius`, `cornerRadius(_:corners:)`, `border(color:width:)`, `shadow`, `accessibilityCombined` |
 | `UILabel` | `text`, `attributedText`, `font`, `font(textStyle:)`, `font(_:relativeTo:)`, `lineHeight`, `kerning`, `textColor`, `numberOfLines`, `textAlignment`, `lineBreakMode`, `adjustsFontSizeToFitWidth`, `minimumScaleFactor` |
 | `UIImageView` | `image`, `highlightedImage`, `preferredSymbolConfiguration` |
 | `UIControl` and any subclass | `isEnabled`, `isSelected`, `isHighlighted` |
@@ -166,7 +166,9 @@ The modifiers for a button with a configuration change its `UIButton.Configurati
 
 `UITextView` has no placeholder of its own. `placeholder` and `attributedPlaceholder` show one line where the text starts while the text view is empty, in the placeholder color unless the attributed form sets its own. Typing hides and shows it, and the `text`, `attributedText`, `font`, `textAlignment` and `textContainerInset` modifiers update it; assigning `textView.text = …` directly does not.
 
-`cornerRadius`, `border` and `shadow` set the view's layer. `cornerRadius` does not clip: add `clipsToBounds(true)`, which also cuts off a shadow. The layer takes a `CGColor`, so a border or shadow color is resolved once and does not follow a later switch between light and dark mode.
+`cornerRadius`, `border` and `shadow` set the view's layer. `cornerRadius` does not clip: add `clipsToBounds(true)`, which also cuts off a shadow. `corners` rounds only some corners, named as physical corners such as `.layerMinXMinYCorner` for the top left, so they do not mirror in right-to-left languages. Border and shadow colors follow a switch between light and dark mode: the view gets a hidden subview that resolves them again when the appearance changes. Assigning `layer.borderColor` directly is not followed.
+
+`accessibilityCombined()` makes VoiceOver read a view and its descendants as one element, whose label joins the labels of the visible descendants and follows later changes. Only labels are combined, so do not use it on an area with buttons or other controls.
 
 ### Events
 
@@ -229,6 +231,7 @@ let avatar = UIImageView()
 ```
 
 - `background(_:)` sets the view's own `backgroundColor`, which a stack draws too. `background { ... }` puts a whole view behind a stack instead.
+- `GradientView([.systemTeal, .systemBlue])` draws a linear gradient, top to bottom by default; use it with `background { … }`. Its points are unit coordinates, as in `CAGradientLayer`, and its colors follow dark mode.
 - A view decoration is a subview pinned with constraints; no container view is inserted and there is no `ZStack`. `alignment` is `.fill` by default, or a position such as `.topTrailing`.
 - The decorated view's own content decides its size.
 - `offset` moves a decoration from where `alignment` puts it: x is positive toward the right and y toward the bottom. The value is passed to Auto Layout as it is: in a right-to-left layout a leading or trailing alignment reverses the horizontal direction and the centered ones do not, so adjust it yourself if that is not what you want. `.fill` takes no offset.
@@ -244,6 +247,17 @@ let header = HStack {
 ```
 
 A `Spacer` takes the remaining length along the axis of its stack, and several spacers share it equally. `contentHuggingPriority(_:for:)` and `compressionResistancePriority(_:for:)` choose which of the other views grows or shrinks first.
+
+`Divider()` is a hairline across its stack: horizontal in a `VStack` and vertical in an `HStack`. It spans the stack inside its padding, whatever the alignment, in `.separator`; change the color with `background(_:)`.
+
+```swift
+VStack(alignment: .leading, spacing: 12) {
+    header
+    Divider()
+    body
+}
+.padding(16)
+```
 
 ### Scroll views
 
@@ -272,6 +286,15 @@ view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
     submit
 }
 .fillsViewport(true)
+```
+
+- To let content scroll under a translucent navigation bar, pin the scroll view to the safe area only at the sides and let UIKit inset the content by the bars. The content starts below the bar, and the bar shows its background once content scrolls under it. `fillsViewport` and `avoidsKeyboard` take these insets into account:
+
+```swift
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .horizontal) {
+    form
+}
+.contentInsetAdjustmentBehavior(.automatic)
 ```
 
 ### Keyboard
@@ -427,7 +450,7 @@ It is optional and separate. DeclarativeUIKit does not depend on it, and it does
 
 ### Profile card
 
-The code has the same shape as the screen. The status badge is attached to the avatar with `overlay`, with no wrapper view or `ZStack`. `bio` and `status` are ordinary properties: the buttons change them directly, and Auto Layout resizes the card. Nothing is rebuilt.
+The code has the same shape as the screen. The status badge is attached to the avatar with `overlay`, with no wrapper view or `ZStack`. `bio` and `status` are ordinary properties: the buttons change them directly, and Auto Layout resizes the card. Nothing is rebuilt. A `Divider` separates the header from the bio, and `accessibilityCombined` lets VoiceOver read the name and role as one element.
 
 <table>
 <tr>
@@ -452,6 +475,8 @@ VStack(alignment: .leading, spacing: 12) {
         }
         Spacer()
     }
+    .accessibilityCombined()
+    Divider()
     bio
 }
 .card()
@@ -477,7 +502,7 @@ extension UIStackView {
             .background {
                 UIView()
                     .background(.secondarySystemGroupedBackground)
-                    .configure { $0.layer.cornerRadius = 12 }
+                    .cornerRadius(12)
             }
     }
 }
@@ -632,7 +657,7 @@ private func toggleRead(_ id: Int) {
 
 All text uses `font(textStyle:)`, so the screens follow Dynamic Type, and they adapt to rotation. Content closures run once; later changes are made through the views themselves, not through data binding.
 
-Each screen mounts its scroll view with `safeArea: .all`, so content stays clear of the navigation bar, the home indicator and, in landscape, the sensor housing, while the screen's background color still fills the whole display.
+Each screen pins its scroll view to the safe area only at the sides and lets UIKit inset the content by the navigation bar and the home indicator. Content starts below the bar and scrolls under it, stays clear of the sensor housing in landscape, and the screen's background color fills the whole display.
 
 The app's deployment target is iOS 15.0, the same as the package's.
 

@@ -90,4 +90,19 @@ final class KeyboardTests: XCTestCase {
         keyboardWillMove(to: docked(height: 250))
         XCTAssertEqual(scroll.contentInset.bottom, 0)
     }
+
+    func testTheSafeAreaUIKitAlreadyInsetsIsNotCountedTwice() {
+        let host = LayoutTestHost(size: screen.size)
+        let scroll = VScroll { UIView().frame(height: 2000) }
+            .contentInsetAdjustmentBehavior(.always)
+            .avoidsKeyboard(true)
+        host.rootView.addContent(scroll)
+        host.layout()
+        let safeArea = scroll.adjustedContentInset.bottom
+        XCTAssertGreaterThan(safeArea, 0)
+
+        keyboardWillMove(to: docked(height: 300))
+        XCTAssertEqual(scroll.contentInset.bottom, 300 - safeArea)
+        XCTAssertEqual(scroll.adjustedContentInset.bottom, 300)
+    }
 }

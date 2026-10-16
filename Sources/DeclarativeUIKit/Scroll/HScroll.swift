@@ -37,6 +37,11 @@ public final class HScroll: UIScrollView {
         fatalError("HScroll is built in code and does not support init(coder:).")
     }
 
+    public override func adjustedContentInsetDidChange() {
+        super.adjustedContentInsetDidChange()
+        fillsViewportConstraint.constant = -(adjustedContentInset.left + adjustedContentInset.right)
+    }
+
     /// Sets whether the horizontal scroll indicator is shown.
     @discardableResult
     public func showsIndicators(_ value: Bool) -> Self {
@@ -48,7 +53,8 @@ public final class HScroll: UIScrollView {
     /// short content keeps its own width.
     ///
     /// The extra width goes to a `Spacer`, which can push the elements after it to the
-    /// trailing edge. Wider content scrolls as usual. `contentInset` is not taken into account.
+    /// trailing edge. Wider content scrolls as usual. The width inside
+    /// `adjustedContentInset` counts.
     @discardableResult
     public func fillsViewport(_ value: Bool) -> Self {
         fillsViewportConstraint.isActive = value

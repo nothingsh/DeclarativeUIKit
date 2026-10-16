@@ -72,8 +72,9 @@ final class ListExampleViewController: UIViewController {
                     }
                 }
             },
-            safeArea: .all
+            safeArea: .horizontal
         )
+        .contentInsetAdjustmentBehavior(.automatic)
         .onRefresh { [weak self] in await self?.startOver() }
     }
 
