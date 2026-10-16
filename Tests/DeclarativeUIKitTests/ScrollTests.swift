@@ -50,6 +50,21 @@ final class ScrollTests: XCTestCase {
         XCTAssertEqual(first.frame.maxX, scroll.bounds.maxX)
     }
 
+    func testRightToLeftHScrollKeepsAnOffsetSetBeforeLayout() {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 200))
+        let scroll = host.rootView.addHScroll {
+            fixedSizeView(width: 200, height: 20)
+            fixedSizeView(width: 200, height: 20)
+        }
+        scroll.stack.semanticContentAttribute = .forceRightToLeft
+        host.layout()
+
+        scroll.stack.addArrangedSubview(fixedSizeView(width: 200, height: 20))
+        scroll.contentOffset.x = 0
+        host.layout()
+        XCTAssertEqual(scroll.contentOffset.x, 0)
+    }
+
     func testIndicatorsAndInsetAdjustment() {
         let vScroll = VScroll { UIView() }
         XCTAssertTrue(vScroll.showsVerticalScrollIndicator)
