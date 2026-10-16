@@ -114,6 +114,44 @@ final class ScrollTests: XCTestCase {
         XCTAssertEqual(scroll.contentSize, CGSize(width: 300, height: 66))
     }
 
+    func testVScrollFillsViewportStretchesShortContentToTheScrollViewHeight() {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 200))
+        let footer = fixedSizeView(width: 20, height: 30)
+        let header = fixedSizeView(width: 20, height: 20)
+        let scroll = host.rootView.addVScroll {
+            header
+            Spacer()
+            footer
+        }
+        .fillsViewport(true)
+        host.layout()
+        XCTAssertEqual(footer.frame.maxY, 200)
+        XCTAssertEqual(scroll.contentSize.height, 200)
+
+        header.constraints.first { $0.firstAttribute == .height }?.constant = 600
+        host.layout()
+        XCTAssertEqual(scroll.contentSize.height, 630)
+
+        scroll.fillsViewport(false)
+        header.constraints.first { $0.firstAttribute == .height }?.constant = 20
+        host.layout()
+        XCTAssertEqual(scroll.contentSize.height, 50)
+    }
+
+    func testHScrollFillsViewportStretchesShortContentToTheScrollViewWidth() {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 200))
+        let trailing = fixedSizeView(width: 30, height: 20)
+        let scroll = host.rootView.addHScroll {
+            fixedSizeView(width: 20, height: 20)
+            Spacer()
+            trailing
+        }
+        .fillsViewport(true)
+        host.layout()
+        XCTAssertEqual(trailing.frame.maxX, 300)
+        XCTAssertEqual(scroll.contentSize.width, 300)
+    }
+
     func testNestedHScrollTakesItsHeightFromItsElements() {
         let host = LayoutTestHost(size: CGSize(width: 300, height: 400))
         let row = HScroll(spacing: 8) {

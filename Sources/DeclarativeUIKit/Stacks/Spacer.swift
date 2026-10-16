@@ -7,7 +7,8 @@ import UIKit
 /// spacers in one stack share the extra space equally. `minLength` is kept as a required
 /// minimum; when the stack cannot fit it, the other views shrink according to their
 /// compression resistance. Along an unbounded axis, such as the scrolling axis of a scroll
-/// view, there is no remaining length, so a spacer is only `minLength` long.
+/// view, there is no remaining length, so a spacer is only `minLength` long, unless
+/// `fillsViewport(true)` makes the content at least as long as the scroll view.
 ///
 /// The axis is read when the spacer is added to a `UIStackView`. Changing that stack's
 /// `axis` afterwards is not followed. A spacer outside a `UIStackView` has no effect, and

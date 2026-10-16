@@ -240,6 +240,16 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 - 嵌套在 stack 中时，`HScroll` 的高度由元素决定，但宽度需要由外部给出，`VScroll` 则相反：像上面那样使用 `.fill` 对齐，或使用 `frame`。
 - `alignment`、`spacing`、`spacing(_:after:)`、`replaceContent` 以及各种形式的 `padding` 都会转发给 `stack`；padding 位于滚动内容之内。
 - `contentInsetAdjustmentBehavior` 为 `.never`，因此内容从滚动视图的边缘开始。用 `safeArea` 挂载滚动视图可以让它保持在安全区内。
+- 内容较短时保持自身长度，因此沿滚动方向的 `Spacer` 没有空间可占。`fillsViewport(true)` 让内容至少与 `VScroll` 一样高，或与 `HScroll` 一样宽；多出的长度由 `Spacer` 占据，可以把按钮留在短表单的底部，内容更长时照常滚动：
+
+```swift
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
+    form
+    Spacer()
+    submit
+}
+.fillsViewport(true)
+```
 
 ### 列表
 

@@ -240,6 +240,16 @@ view.addVScroll(alignment: .fill, spacing: 12) {
 - Nested in a stack, an `HScroll` takes its height from its elements but needs its width from outside, and a `VScroll` the reverse: use `.fill` alignment, as above, or `frame`.
 - `alignment`, `spacing`, `spacing(_:after:)`, `replaceContent` and every form of `padding` are forwarded to `stack`; the padding lies inside the scrolled content.
 - `contentInsetAdjustmentBehavior` is `.never`, so the content starts at the scroll view's edges. Mount the scroll view with `safeArea` to keep it inside the safe area.
+- Short content keeps its own length, so a `Spacer` along the scrolling axis has no room to take. `fillsViewport(true)` makes the content at least as tall as a `VScroll`, or as wide as an `HScroll`; a `Spacer` then takes the extra length, which keeps a button at the bottom of a short form, while longer content still scrolls:
+
+```swift
+view.addVScroll(alignment: .fill, spacing: 12, safeArea: .all) {
+    form
+    Spacer()
+    submit
+}
+.fillsViewport(true)
+```
 
 ### Lists
 
