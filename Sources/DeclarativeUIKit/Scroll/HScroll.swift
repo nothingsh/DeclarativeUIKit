@@ -10,6 +10,10 @@ public final class HScroll: UIScrollView {
     /// The stack that arranges the elements, for configuration without a forwarding modifier.
     public let stack: HStack
 
+    private lazy var fillsViewportConstraint = stack.widthAnchor.constraint(
+        greaterThanOrEqualTo: frameLayoutGuide.widthAnchor
+    )
+
     /// - Parameters:
     ///   - alignment: How the elements line up on the vertical axis.
     ///   - spacing: The distance between elements. There is none by default.
@@ -37,6 +41,17 @@ public final class HScroll: UIScrollView {
     @discardableResult
     public func showsIndicators(_ value: Bool) -> Self {
         showsHorizontalScrollIndicator = value
+        return self
+    }
+
+    /// Sets whether the content is at least as wide as the scroll view. Off by default, so
+    /// short content keeps its own width.
+    ///
+    /// The extra width goes to a `Spacer`, which can push the elements after it to the
+    /// trailing edge. Wider content scrolls as usual. `contentInset` is not taken into account.
+    @discardableResult
+    public func fillsViewport(_ value: Bool) -> Self {
+        fillsViewportConstraint.isActive = value
         return self
     }
 

@@ -10,6 +10,10 @@ public final class VScroll: UIScrollView {
     /// The stack that arranges the elements, for configuration without a forwarding modifier.
     public let stack: VStack
 
+    private lazy var fillsViewportConstraint = stack.heightAnchor.constraint(
+        greaterThanOrEqualTo: frameLayoutGuide.heightAnchor
+    )
+
     /// - Parameters:
     ///   - alignment: How the elements line up on the horizontal axis.
     ///   - spacing: The distance between elements. There is none by default.
@@ -37,6 +41,17 @@ public final class VScroll: UIScrollView {
     @discardableResult
     public func showsIndicators(_ value: Bool) -> Self {
         showsVerticalScrollIndicator = value
+        return self
+    }
+
+    /// Sets whether the content is at least as tall as the scroll view. Off by default, so
+    /// short content keeps its own height.
+    ///
+    /// The extra height goes to a `Spacer`, which can push the elements after it to the
+    /// bottom. Taller content scrolls as usual. `contentInset` is not taken into account.
+    @discardableResult
+    public func fillsViewport(_ value: Bool) -> Self {
+        fillsViewportConstraint.isActive = value
         return self
     }
 
