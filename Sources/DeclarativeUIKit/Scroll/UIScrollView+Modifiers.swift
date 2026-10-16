@@ -22,6 +22,18 @@ public extension UIScrollView {
     }
 
     @discardableResult
+    func isPagingEnabled(_ value: Bool) -> Self {
+        self.isPagingEnabled = value
+        return self
+    }
+
+    @discardableResult
+    func keyboardDismissMode(_ value: UIScrollView.KeyboardDismissMode) -> Self {
+        self.keyboardDismissMode = value
+        return self
+    }
+
+    @discardableResult
     func contentInsetAdjustmentBehavior(_ value: UIScrollView.ContentInsetAdjustmentBehavior) -> Self {
         self.contentInsetAdjustmentBehavior = value
         return self

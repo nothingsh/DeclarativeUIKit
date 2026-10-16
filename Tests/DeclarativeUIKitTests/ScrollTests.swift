@@ -193,4 +193,23 @@ final class ScrollTests: XCTestCase {
         let insets = NSDirectionalEdgeInsets(top: 5, leading: 6, bottom: 7, trailing: 8)
         XCTAssertEqual(HScroll { UIView() }.padding(insets).stack.directionalLayoutMargins, insets)
     }
+
+    func testOnRefreshRunsTheLatestActionAndStopsSpinning() async throws {
+        let host = LayoutTestHost(size: CGSize(width: 300, height: 400))
+        var runs: [String] = []
+        let scroll = host.rootView.addVScroll { UIView() }
+            .onRefresh { runs.append("first") }
+            .onRefresh { runs.append("second") }
+        host.layout()
+        let control = try XCTUnwrap(scroll.refreshControl)
+
+        control.beginRefreshing()
+        control.sendActions(for: .valueChanged)
+        for _ in 0..<10 where control.isRefreshing {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(runs, ["second"])
+        XCTAssertFalse(control.isRefreshing)
+    }
 }

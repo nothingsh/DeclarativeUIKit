@@ -10,18 +10,20 @@ private struct Message {
 private enum Row {
     case message(Message)
     case notifications
+    case storage
     case version
 
     var id: String {
         switch self {
         case .message(let message): return "message-\(message.id)"
         case .notifications: return "notifications"
+        case .storage: return "storage"
         case .version: return "version"
         }
     }
 }
 
-/// A grouped list with reusable rows, updated by passing new data.
+/// A grouped list with reusable and standard rows, updated by passing new data.
 final class ListExampleViewController: UIViewController {
 
     private var messages = (1...4).map { Message(id: $0, title: "Message \($0)") }
@@ -42,11 +44,23 @@ final class ListExampleViewController: UIViewController {
                 case .message(let message):
                     return ListRow(MessageRow.self) { $0.update(message) }
                         .onSelect { self?.toggleRead(message.id) }
+                        .trailingSwipeActions([
+                            UIContextualAction(style: .destructive, title: "Delete") { _, _, done in
+                                self?.deleteMessage(message.id)
+                                done(true)
+                            }
+                        ])
                 case .notifications:
                     return ListRow(SwitchRow.self) {
                         $0.update(title: "Notifications", isOn: self?.notifications ?? false)
                         $0.onChange = { self?.notifications = $0 }
                     }
+                case .storage:
+                    var content = UIListContentConfiguration.valueCell()
+                    content.text = "Storage"
+                    content.secondaryText = "1.2 GB"
+                    content.image = UIImage(systemName: "internaldrive")
+                    return ListRow(content: content)
                 case .version:
                     return ListRow {
                         HStack(spacing: 8) {
@@ -60,6 +74,7 @@ final class ListExampleViewController: UIViewController {
             },
             safeArea: .all
         )
+        .onRefresh { [weak self] in await self?.startOver() }
     }
 
     private func sections() -> [ListSection<Row>] {
@@ -67,16 +82,27 @@ final class ListExampleViewController: UIViewController {
             ListSection(
                 id: "inbox",
                 header: "Inbox · \(messages.filter { !$0.isRead }.count) unread",
-                footer: "Add inserts a message at the top. Tap a message to mark it read or unread.",
+                footer: "Add inserts a message at the top. Tap a message to mark it read or unread, swipe it to delete it, and pull down to start over.",
                 items: messages.map(Row.message)
             ),
-            ListSection(id: "settings", header: "Settings", items: [.notifications, .version])
+            ListSection(id: "settings", header: "Settings", items: [.notifications, .storage, .version])
         ]
     }
 
     @objc private func addMessage() {
         let id = (messages.map(\.id).max() ?? 0) + 1
         messages.insert(Message(id: id, title: "Message \(id)"), at: 0)
+        list.update(sections())
+    }
+
+    private func deleteMessage(_ id: Int) {
+        messages.removeAll { $0.id == id }
+        list.update(sections())
+    }
+
+    private func startOver() async {
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        messages = (1...4).map { Message(id: $0, title: "Message \($0)") }
         list.update(sections())
     }
 
