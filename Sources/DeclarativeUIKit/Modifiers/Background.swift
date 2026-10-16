@@ -4,9 +4,6 @@ import UIKit
 public extension UIView {
 
     /// Sets this view's `backgroundColor`. It adds no subview.
-    ///
-    /// A stack does not draw its `backgroundColor` on iOS 13. To support iOS 13, give a
-    /// stack a colored view with `background(alignment:content:)` instead.
     @discardableResult
     func background(_ color: UIColor?) -> Self {
         backgroundColor = color

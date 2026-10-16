@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The minimum deployment target is iOS 15.0, raised from iOS 13.0.
+
 ## [0.2.0] - 2026-10-14
 
 ### Added
